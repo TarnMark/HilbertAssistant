@@ -1,5 +1,3 @@
-// src/logic/syntax/Substitution.ts
-
 import type { Formula } from './Formula'
 // import type { Term } from "./Term"
 

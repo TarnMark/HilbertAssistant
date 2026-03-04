@@ -3,7 +3,7 @@ export * from './syntax/Formula'
 export * from './syntax/Substitution'
 
 export * from './rules/AxiomSchema'
-export * from './rules/ModusPonens'
+export * from './rules/InferenceRule'
 
 export * from './proof/ProofStep'
 export * from './proof/ProofState'
