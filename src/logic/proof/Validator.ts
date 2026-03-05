@@ -42,7 +42,10 @@ export class Validator {
   }
 
   validateAxiom(step: ProofStep, axioms: AxiomSchema[]): ValidationResult {
-    const schema = axioms.find((a) => a.name === step.justification.schemaName)
+    if (step.justification.kind !== 'axiom') return { success: false }
+    const schema = axioms.find(
+      (a) => step.justification.kind === 'axiom' && a.name === step.justification.schemaName,
+    )
 
     if (!schema) {
       return {

@@ -12,7 +12,7 @@ export function parseFormula(input: string): Formula {
     if (i >= s.length) {
       throw new Error('Unexpected end of input')
     }
-    return s[i++]
+    return s[i++]!
   }
 
   function parseImplication(): Formula {

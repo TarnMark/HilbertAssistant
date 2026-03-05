@@ -17,7 +17,7 @@ export function validateInferenceRule(
   const bindings = new Map<string, Formula>()
 
   for (let k = 0; k < rule.premises.length; k++) {
-    const index = premiseIndices[k]
+    const index = premiseIndices[k]!
 
     // checks if the referenced step is from the future
     if (index >= stepIndex) {
@@ -29,7 +29,7 @@ export function validateInferenceRule(
       return { success: false }
     }
 
-    const ok = matchWithBindings(rule.premises[k], step.formula, bindings)
+    const ok = matchWithBindings(rule.premises[k]!, step.formula, bindings)
 
     if (!ok) {
       return { success: false }
@@ -58,8 +58,8 @@ export function instantiate(pattern: Formula, bindings: Map<string, Formula>): F
   }
 
   switch (pattern.kind) {
-    case 'atom':
-      return atom(pattern.name)
+    // case 'atom':
+    //   return atom(pattern.name)
 
     case 'imp':
       return imp(instantiate(pattern.left, bindings), instantiate(pattern.right, bindings))

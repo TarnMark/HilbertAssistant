@@ -2,7 +2,7 @@ import { formulaEquals, type Formula } from '../syntax/Formula'
 
 export interface InferenceRule {
   name: string
-  premises?: Formula[]
+  premises: Formula[]
   conclusion: Formula
 }
 
@@ -31,16 +31,18 @@ export function matchWithBindings(
   }
 
   switch (pattern.kind) {
-    case 'atom':
-      return pattern.name === candidate.name
+    // case 'atom':
+    //   return pattern.name === candidate.name
 
     case 'imp':
+      if (candidate.kind != 'imp') return false
       return (
         matchWithBindings(pattern.left, candidate.left, bindings) &&
         matchWithBindings(pattern.right, candidate.right, bindings)
       )
 
     case 'not':
+      if (candidate.kind != 'not') return false
       return matchWithBindings(pattern.inner, candidate.inner, bindings)
 
     default:

@@ -4,8 +4,14 @@ import { createDefaultAxiomRegistry } from '../AxiomRegistry'
 import { createDefaultRuleRegistry } from '../RuleRegistry'
 import { Validator } from '@/logic/proof/Validator'
 import { emptyProofState } from '@/logic/proof/ProofEngine'
+import type { ProofStep } from '@/logic/proof/ProofStep'
+import type { ProofState } from '@/logic/proof/ProofState'
 
-describe('Modus Ponens (propositional)', () => {
+function makeState(steps: ProofStep[]): ProofState {
+  return { assumptions: [], steps }
+}
+
+describe('Modus Ponens', () => {
   const A = atom('A')
   const B = atom('B')
   const C = atom('C')
@@ -16,38 +22,155 @@ describe('Modus Ponens (propositional)', () => {
 
   const state = emptyProofState()
 
-  it.todo('derives consequent when antecedent matches', () => {
-    const result = validator.validateStep(state, A, imp(A, B))
+  it('accepts valid Modus Ponens', () => {
+    const step0: ProofStep = {
+      index: 0,
+      formula: A,
+      justification: { kind: 'assumption' },
+    }
+
+    const step1: ProofStep = {
+      index: 1,
+      formula: imp(A, B),
+      justification: { kind: 'assumption' },
+    }
+
+    const step2: ProofStep = {
+      index: 2,
+      formula: B,
+      justification: { kind: 'rule', ruleName: 'MP', from: [0, 1] },
+    }
+
+    const state = makeState([step0, step1])
+
+    const result = validator.validateStep(state, step2)
 
     expect(result.success).toBe(true)
-    expect(result.derived).toEqual(B)
   })
 
-  it.todo('fails when second premise is not an implication', () => {
-    const result = applyModusPonens(A, B)
+  it('rejects MP when antecedent does not match', () => {
+    const step0: ProofStep = {
+      index: 0,
+      formula: B,
+      justification: { kind: 'assumption' },
+    }
+
+    const step1: ProofStep = {
+      index: 1,
+      formula: imp(A, B),
+      justification: { kind: 'assumption' },
+    }
+
+    const step2: ProofStep = {
+      index: 2,
+      formula: B,
+      justification: { kind: 'rule', ruleName: 'MP', from: [0, 1] },
+    }
+
+    const state = makeState([step0, step1])
+
+    const result = validator.validateStep(state, step2)
 
     expect(result.success).toBe(false)
-    expect(result.error).toBeDefined()
   })
 
-  it.todo('fails when antecedent does not match implication', () => {
-    const result = applyModusPonens(A, imp(B, C))
+  it('rejects MP referencing future step', () => {
+    const step0: ProofStep = {
+      index: 0,
+      formula: A,
+      justification: { kind: 'assumption' },
+    }
+
+    const step1: ProofStep = {
+      index: 1,
+      formula: B,
+      justification: { kind: 'rule', ruleName: 'MP', from: [0, 2] },
+    }
+
+    const state = makeState([step0])
+
+    const result = validator.validateStep(state, step1)
 
     expect(result.success).toBe(false)
   })
 
-  it.todo('handles nested formulas', () => {
+  it('rejects MP when second line is not implication', () => {
+    const step0: ProofStep = {
+      index: 0,
+      formula: A,
+      justification: { kind: 'assumption' },
+    }
+
+    const step1: ProofStep = {
+      index: 1,
+      formula: B,
+      justification: { kind: 'assumption' },
+    }
+
+    const step2: ProofStep = {
+      index: 2,
+      formula: B,
+      justification: { kind: 'rule', ruleName: 'MP', from: [0, 1] },
+    }
+
+    const state = makeState([step0, step1])
+
+    const result = validator.validateStep(state, step2)
+
+    expect(result.success).toBe(false)
+  })
+
+  it('MP handles nested formulas', () => {
     const antecedent = imp(A, B)
     const implication = imp(antecedent, C)
 
-    const result = applyModusPonens(antecedent, implication)
+    const step0: ProofStep = {
+      index: 0,
+      formula: antecedent,
+      justification: { kind: 'assumption' },
+    }
+
+    const step1: ProofStep = {
+      index: 1,
+      formula: implication,
+      justification: { kind: 'assumption' },
+    }
+
+    const step2: ProofStep = {
+      index: 2,
+      formula: C,
+      justification: { kind: 'rule', ruleName: 'MP', from: [0, 1] },
+    }
+
+    const state = makeState([step0, step1])
+
+    const result = validator.validateStep(state, step2)
 
     expect(result.success).toBe(true)
-    expect(result.derived).toEqual(C)
   })
 
-  it.todo('distinguishes syntactically different antecedents', () => {
-    const result = applyModusPonens(not(A), imp(A, B))
+  it('distinguishes syntactically different antecedents', () => {
+    const step0: ProofStep = {
+      index: 0,
+      formula: not(A),
+      justification: { kind: 'assumption' },
+    }
+
+    const step1: ProofStep = {
+      index: 1,
+      formula: imp(A, B),
+      justification: { kind: 'assumption' },
+    }
+
+    const step2: ProofStep = {
+      index: 2,
+      formula: B,
+      justification: { kind: 'rule', ruleName: 'MP', from: [0, 1] },
+    }
+
+    const state = makeState([step0, step1])
+
+    const result = validator.validateStep(state, step2)
 
     expect(result.success).toBe(false)
   })

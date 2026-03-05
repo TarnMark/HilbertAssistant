@@ -11,7 +11,7 @@
             <div>
                 <label>Justification</label>
                 <select v-model="selected">
-                    <option value="">Select</option>
+                    <!-- <option value="">Select</option> -->
                     <option v-for="j in store.availableJustifications" :key="j.name" :value="j.name">
                         {{ j.name }}
                     </option>
@@ -64,13 +64,17 @@ const requiresInputs = computed(() => {
     return j?.inputs
 })
 
-function selectedJustification(): VisualJustification {
+function selectedJustification(): VisualJustification | undefined {
     return store.availableJustifications.find(j => j.name === selected.value);
 }
 
 
 function commit() {
-    const just = toJust(selectedJustification(), inputs.value)
+    const selected = selectedJustification()
+    if (!selected) {
+        error.value = 'No justification selectd'
+    }
+    const just = toJust(selected!, inputs.value)
     // console.log('Committing step: ' + formula.value + '\n' + JSON.stringify(just))
     const result = store.commitStep(
         formula.value,
