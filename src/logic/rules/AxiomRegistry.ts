@@ -2,16 +2,21 @@ import { atom, imp, not } from '../syntax/Formula'
 import type { AxiomSchema } from './AxiomSchema'
 
 export class AxiomRegistry {
-  private axioms = new Map<string, AxiomSchema>()
+  axioms = new Map<string, AxiomSchema>()
 
   add(axiom: AxiomSchema) {
     if (this.axioms.has(axiom.name)) {
-      throw new Error('Axiom already exists: ${rule.name}')
+      throw new Error('Axiom already exists: ${axiom.name}')
     }
     this.axioms.set(axiom.name, axiom)
   }
 
-  //TODO: remove
+  remove(axiom: string) {
+    console.log(this.axioms.keys())
+    if (!this.axioms.delete(axiom)) {
+      throw new Error('No such axiom found: ' + axiom)
+    }
+  }
 
   get(name: string) {
     return this.axioms.get(name)

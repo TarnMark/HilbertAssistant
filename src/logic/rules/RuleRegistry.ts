@@ -2,7 +2,7 @@ import { atom, imp } from '../syntax/Formula'
 import type { InferenceRule } from './InferenceRule'
 
 export class RuleRegistry {
-  private rules = new Map<string, InferenceRule>()
+  rules = new Map<string, InferenceRule>()
 
   register(rule: InferenceRule) {
     if (this.rules.has(rule.name)) {
@@ -11,7 +11,11 @@ export class RuleRegistry {
     this.rules.set(rule.name, rule)
   }
 
-  //TODO: delete
+  remove(rule: string) {
+    if (!this.rules.delete(rule)) {
+      throw new Error('No such rule found: ' + rule)
+    }
+  }
 
   get(name: string) {
     return this.rules.get(name)

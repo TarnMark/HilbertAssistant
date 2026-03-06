@@ -1,7 +1,7 @@
-import type { InferenceRule } from '../rules/InferenceRule'
 import type { ProofState } from '../proof/ProofState'
+import type { InferenceRule } from '../rules/InferenceRule'
 import { isSchemaVariable, matchWithBindings } from '../rules/InferenceRule'
-import { atom, formulaEquals, imp, not, type Formula } from '../syntax/Formula'
+import { formulaEquals, imp, not, type Formula } from '../syntax/Formula'
 
 export function validateInferenceRule(
   rule: InferenceRule,

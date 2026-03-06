@@ -1,10 +1,8 @@
+import type { ProofError } from './ProofError'
 import type { ProofState } from './ProofState'
 import type { ProofStep } from './ProofStep'
-import type { ProofError } from './ProofError'
-import type { AxiomSchema } from '../rules/AxiomSchema'
 
-import type { Formula } from '../syntax/Formula'
-import type { Validator } from './Validator'
+import { validateStep } from './Validator'
 
 export interface AddStepResult {
   success: boolean
@@ -12,15 +10,10 @@ export interface AddStepResult {
   error?: ProofError
 }
 
-export function emptyProofState(assumptions: Formula[] = []): ProofState {
-  return { assumptions, steps: [] }
-}
-
 export function addStep(
   state: ProofState,
   formula: ProofStep['formula'],
   justification: ProofStep['justification'],
-  validator: Validator,
 ): AddStepResult {
   const nextIndex = state.steps.length
 
@@ -30,7 +23,7 @@ export function addStep(
     justification,
   }
 
-  const validation = validator.validateStep(state, newStep)
+  const validation = validateStep(state, newStep)
 
   if (!validation.success) {
     return {
@@ -41,6 +34,8 @@ export function addStep(
 
   const newState: ProofState = {
     assumptions: state.assumptions,
+    axioms: state.axioms,
+    rules: state.rules,
     steps: [...state.steps, newStep],
   }
 

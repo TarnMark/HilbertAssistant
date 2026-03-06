@@ -1,13 +1,13 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
-import { emptyProofState, addStep } from '@/logic/proof/ProofEngine'
+import { addStep } from '@/logic/proof/ProofEngine'
 
-import { createDefaultAxiomRegistry } from '@/logic/rules/AxiomRegistry'
-import { createDefaultRuleRegistry } from '@/logic/rules/RuleRegistry'
+import { AxiomRegistry, createDefaultAxiomRegistry } from '@/logic/rules/AxiomRegistry'
+import { createDefaultRuleRegistry, RuleRegistry } from '@/logic/rules/RuleRegistry'
 
-import { atom, formulaEquals, formulaToString, imp } from '@/logic/syntax/Formula'
-import { formatJustification, Validator, type Justification, type ProofState } from '@/logic'
+import { atom, formulaEquals, formulaToString, imp, type Formula } from '@/logic/syntax/Formula'
+import { emptyProofState, formatJustification, type Justification, type ProofState } from '@/logic'
 import { parseFormula, type VisualJustification } from '@/helpers'
 
 export const useProofStore = defineStore('proof', () => {
@@ -15,20 +15,27 @@ export const useProofStore = defineStore('proof', () => {
   // Core Logic Infrastructure
   // ----------------------------
 
-  const axioms = createDefaultAxiomRegistry()
-  const rules = createDefaultRuleRegistry()
-  const validator = new Validator(axioms, rules)
+  const axioms = ref<AxiomRegistry>(createDefaultAxiomRegistry())
+  const rules = ref<RuleRegistry>(createDefaultRuleRegistry())
+  // const validator = new Validator()
+  // TODO: dynamic validator
 
   // ----------------------------
   // Reactive Proof State
   // ----------------------------
+  const assumptions = ref<Formula[]>([atom('A')])
 
-  const state = ref<ProofState>(emptyProofState())
+  const state = ref<ProofState>(emptyProofState([], assumptions.value))
   const stateHistory = ref<ProofState[]>([])
   stateHistory.value.push(state.value)
   const lastError = ref<string | null>(null)
 
-  const goal = ref<string>('A>(B>A)')
+  //   const all = new Map<string, Formula[] | AxiomRegistry | RuleRegistry>()
+  // all.set('assumptions', assumptions.value)
+  // all.set('axioms', axioms)
+  // all.set('rules', rules)
+
+  const goal = ref<string>('B > A')
 
   const goalAchieved = computed(() =>
     state.value.steps.length == 0
@@ -46,23 +53,28 @@ export const useProofStore = defineStore('proof', () => {
   const steps = computed(() => state.value.steps)
 
   const availableJustifications = computed<VisualJustification[]>(() => [
-    // { kind: 'assumption' as const },
+    ...assumptions.value.map((a) => ({
+      name: 'Hypothesis',
+      formula: formulaToString(a),
+      category: 'assumption' as const,
+      inputs: false,
+    })),
 
-    ...axioms.getAll().map((a) => ({
+    ...axioms.value.getAll().map((a) => ({
       name: a.name,
       formula: formulaToString(a.schema),
       category: 'axiom' as const,
       inputs: false,
     })),
 
-    ...rules.getAll().map((r) => ({
+    ...rules.value.getAll().map((r) => ({
       name: r.name,
       formula:
         r.premises?.map((f) => formulaToString(f)).join(', ') +
         ' => ' +
         formulaToString(r.conclusion),
       category: 'rule' as const,
-      inputs: true, //r.premises?.map((f) => formulaToString(f)),
+      inputs: true,
     })),
   ])
 
@@ -84,7 +96,9 @@ export const useProofStore = defineStore('proof', () => {
       return { success: false, error: 'Invalid formula syntax.' }
     }
 
-    const result = addStep(state.value, parsedFormula, justification, validator)
+    state.value.axioms = axioms.value
+    state.value.rules = rules.value
+    const result = addStep(state.value, parsedFormula, justification)
 
     if (!result.success) {
       const message = result.error?.code ?? 'Step rejected.'
@@ -107,11 +121,30 @@ export const useProofStore = defineStore('proof', () => {
     }
   }
 
+  function removeJustification(j: VisualJustification) {
+    switch (j.category) {
+      case 'assumption':
+        assumptions.value.splice(
+          assumptions.value.findIndex((f) => f === parseFormula(j.formula)),
+          1,
+        )
+        return
+      case 'axiom':
+        axioms.value.remove(j.name)
+        return
+      case 'rule':
+        rules.value.remove(j.name)
+        return
+    }
+  }
+
   return {
     // reactive data
     steps,
     // stateHistory,
     // state,
+    axioms,
+    rules,
     goal,
     goalAchieved,
     lastError,
@@ -120,5 +153,6 @@ export const useProofStore = defineStore('proof', () => {
     // actions
     commitStep,
     undoStep,
+    removeJustification,
   }
 })

@@ -11,6 +11,7 @@
         <div class="goal">
             <h3 class="goal-label">Goal</h3>
             <div class="goal-formula">{{ store.goal }}</div>
+            <b v-if="store.goalAchieved">Goal achieved!</b>
         </div>
     </aside>
 </template>

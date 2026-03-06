@@ -1,11 +1,14 @@
 <template>
     <aside class="sidebar">
 
-        <SidebarRow :formulas="assumptions" :title="'Hypotheses'"></SidebarRow>
+        <SidebarRow :formulas="store.availableJustifications.filter(j => j.category === 'assumption')"
+            :title="'Hypotheses'"></SidebarRow>
 
-        <SidebarRow :formulas="axioms" :title="'Axioms'"></SidebarRow>
+        <SidebarRow :formulas="store.availableJustifications.filter(j => j.category === 'axiom')" :title="'Axioms'">
+        </SidebarRow>
 
-        <SidebarRow :formulas="rules" :title="'Rules'"></SidebarRow>
+        <SidebarRow :formulas="store.availableJustifications.filter(j => j.category === 'rule')" :title="'Rules'">
+        </SidebarRow>
     </aside>
 </template>
 
@@ -15,11 +18,6 @@ import SidebarRow from './SidebarBlock.vue';
 
 const store = useProofStore()
 
-const justifications = store.availableJustifications//.filter(j => j.kind==='rule')
-
-const rules = justifications.filter(j => j.category === 'rule')
-const axioms = justifications.filter(j => j.category === 'axiom')
-const assumptions = justifications.filter(j => j.category === 'assumption')
 </script>
 
 <style scoped>

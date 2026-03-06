@@ -2,23 +2,15 @@ import { describe, it, expect } from 'vitest'
 import { atom, imp, not } from '../../syntax/Formula'
 import { createDefaultAxiomRegistry } from '../AxiomRegistry'
 import { createDefaultRuleRegistry } from '../RuleRegistry'
-import { Validator } from '@/logic/proof/Validator'
-import { emptyProofState } from '@/logic/proof/ProofEngine'
+import { emptyProofState } from '@/logic/proof/ProofState'
 import type { ProofStep } from '@/logic/proof/ProofStep'
 import type { ProofState } from '@/logic/proof/ProofState'
-
-function makeState(steps: ProofStep[]): ProofState {
-  return { assumptions: [], steps }
-}
+import { validateStep } from '@/logic/proof/Validator'
 
 describe('Modus Ponens', () => {
   const A = atom('A')
   const B = atom('B')
   const C = atom('C')
-
-  const axioms = createDefaultAxiomRegistry()
-  const registry = createDefaultRuleRegistry()
-  const validator = new Validator(axioms, registry)
 
   const state = emptyProofState()
 
@@ -41,9 +33,9 @@ describe('Modus Ponens', () => {
       justification: { kind: 'rule', ruleName: 'MP', from: [0, 1] },
     }
 
-    const state = makeState([step0, step1])
+    const state = emptyProofState([step0, step1])
 
-    const result = validator.validateStep(state, step2)
+    const result = validateStep(state, step2)
 
     expect(result.success).toBe(true)
   })
@@ -67,9 +59,9 @@ describe('Modus Ponens', () => {
       justification: { kind: 'rule', ruleName: 'MP', from: [0, 1] },
     }
 
-    const state = makeState([step0, step1])
+    const state = emptyProofState([step0, step1])
 
-    const result = validator.validateStep(state, step2)
+    const result = validateStep(state, step2)
 
     expect(result.success).toBe(false)
   })
@@ -87,9 +79,9 @@ describe('Modus Ponens', () => {
       justification: { kind: 'rule', ruleName: 'MP', from: [0, 2] },
     }
 
-    const state = makeState([step0])
+    const state = emptyProofState([step0])
 
-    const result = validator.validateStep(state, step1)
+    const result = validateStep(state, step1)
 
     expect(result.success).toBe(false)
   })
@@ -113,9 +105,9 @@ describe('Modus Ponens', () => {
       justification: { kind: 'rule', ruleName: 'MP', from: [0, 1] },
     }
 
-    const state = makeState([step0, step1])
+    const state = emptyProofState([step0, step1])
 
-    const result = validator.validateStep(state, step2)
+    const result = validateStep(state, step2)
 
     expect(result.success).toBe(false)
   })
@@ -142,9 +134,9 @@ describe('Modus Ponens', () => {
       justification: { kind: 'rule', ruleName: 'MP', from: [0, 1] },
     }
 
-    const state = makeState([step0, step1])
+    const state = emptyProofState([step0, step1])
 
-    const result = validator.validateStep(state, step2)
+    const result = validateStep(state, step2)
 
     expect(result.success).toBe(true)
   })
@@ -168,9 +160,9 @@ describe('Modus Ponens', () => {
       justification: { kind: 'rule', ruleName: 'MP', from: [0, 1] },
     }
 
-    const state = makeState([step0, step1])
+    const state = emptyProofState([step0, step1])
 
-    const result = validator.validateStep(state, step2)
+    const result = validateStep(state, step2)
 
     expect(result.success).toBe(false)
   })

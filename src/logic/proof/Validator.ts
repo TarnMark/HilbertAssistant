@@ -1,47 +1,40 @@
-import type { ProofState } from './ProofState'
-import type { ProofStep } from './ProofStep'
 import type { AxiomSchema } from '../rules/AxiomSchema'
 import type { ProofError } from './ProofError'
+import type { ProofState } from './ProofState'
+import type { ProofStep } from './ProofStep'
 
 import { matchAxiomSchema } from '../rules/AxiomSchema'
-import { validateInferenceRule } from './RuleValidator'
-import type { RuleRegistry } from '../rules/RuleRegistry'
-import type { AxiomRegistry } from '../rules/AxiomRegistry'
 import { formulaEquals } from '../syntax/Formula'
+import { validateInferenceRule } from './RuleValidator'
 
 export interface ValidationResult {
   success: boolean
   error?: ProofError
 }
 
-export class Validator {
-  constructor(
-    private axioms: AxiomRegistry,
-    private rules: RuleRegistry,
-  ) {}
+// export class Validator {
+export function validateStep(state: ProofState, step: ProofStep): ValidationResult {
+  switch (step.justification.kind) {
+    case 'axiom':
+      return validateAxiom(step, state.axioms.getAll())
 
-  validateStep(state: ProofState, step: ProofStep): ValidationResult {
-    switch (step.justification.kind) {
-      case 'axiom':
-        return this.validateAxiom(step, this.axioms.getAll())
+    case 'rule':
+      const rule = state.rules.get(step.justification.ruleName)
+      if (!rule) return { success: false, error: { code: 'unknown_rule' } }
+      return validateInferenceRule(rule, state, step.justification.from, step.formula, step.index)
 
-      case 'rule':
-        const rule = this.rules.get(step.justification.ruleName)
-        if (!rule) return { success: false, error: { code: 'unknown_rule' } }
-        return validateInferenceRule(rule, state, step.justification.from, step.formula, step.index)
+    case 'assumption':
+      return validateAssumption(state, step)
 
-      case 'assumption':
-        return this.validateAssumption(state, step)
-
-      default:
-        return {
-          success: false,
-          error: { code: 'unknown_justification' },
-        }
-    }
+    default:
+      return {
+        success: false,
+        error: { code: 'unknown_justification' },
+      }
   }
+  // }
 
-  validateAxiom(step: ProofStep, axioms: AxiomSchema[]): ValidationResult {
+  function validateAxiom(step: ProofStep, axioms: AxiomSchema[]): ValidationResult {
     if (step.justification.kind !== 'axiom') return { success: false }
     const schema = axioms.find(
       (a) => step.justification.kind === 'axiom' && a.name === step.justification.schemaName,
@@ -66,7 +59,7 @@ export class Validator {
     return { success: true }
   }
 
-  validateAssumption(state: ProofState, step: ProofStep): ValidationResult {
+  function validateAssumption(state: ProofState, step: ProofStep): ValidationResult {
     const exists = state.assumptions.some((a) => formulaEquals(a, step.formula))
 
     if (!exists) {
