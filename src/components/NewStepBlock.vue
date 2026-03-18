@@ -23,8 +23,8 @@
 
             <div v-if="requiredInputs > 0" class="field">
                 <label>Input Steps</label>
-                <div v-if="requiredInputs > 0" class="rule-info">
-                    {{ draftStep.inputs.length }} / {{ requiredInputs }} inputs
+                <div class="rule-info">
+                    {{draftStep.inputs.filter(i => i !== null).length}} / {{ requiredInputs }} inputs
                 </div>
                 <div class="input-slots">
                     <div v-for="(slot, index) in requiredInputs" :key="index" class="input-slot"

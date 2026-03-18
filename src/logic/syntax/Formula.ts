@@ -74,6 +74,24 @@ export function formulaEquals(a: Formula, b: Formula): boolean {
   }
 }
 
+export function makeSchemaVariables(f: Formula): Formula {
+  switch (f.kind) {
+    case 'atom': {
+      f.name = '?' + f.name
+      return f
+    }
+
+    case 'not':
+      return makeSchemaVariables(f.inner)
+
+    case 'imp': {
+      f.left = makeSchemaVariables(f.left)
+      f.right = makeSchemaVariables(f.right)
+      return f
+    }
+  }
+}
+
 // export interface UniversalQuantifier {
 //   kind: 'forall'
 //   variable: string

@@ -27,7 +27,7 @@ function formatFormulaInput(event: Event) {
     let value = input.value
 
     value = value.toUpperCase()
-    value = value.replace(/[^A-Z()>→\-¬]/g, "")
+    value = value.replace(/[^A-Z()>→\-¬?]/g, "")
 
     // update the field and the model
     input.value = value

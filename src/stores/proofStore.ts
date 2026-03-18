@@ -6,27 +6,27 @@ import { addStep } from '@/logic/proof/ProofEngine'
 import { AxiomRegistry, createDefaultAxiomRegistry } from '@/logic/rules/AxiomRegistry'
 import { createDefaultRuleRegistry, RuleRegistry } from '@/logic/rules/RuleRegistry'
 
-import { atom, formulaEquals, formulaToString, imp, type Formula } from '@/logic/syntax/Formula'
+import {
+  atom,
+  formulaEquals,
+  formulaToString,
+  imp,
+  makeSchemaVariables,
+  type Formula,
+} from '@/logic/syntax/Formula'
 import { emptyProofState, formatJustification, type Justification, type ProofState } from '@/logic'
 import { parseFormula, type VisualJustification } from '@/helpers'
 
 export const useProofStore = defineStore('proof', () => {
-  // ----------------------------
-  // Core Logic Infrastructure
-  // ----------------------------
+  const assumptions = ref<Formula[]>([])
 
-  const axioms = reactive(createDefaultAxiomRegistry())
-  const rules = reactive(createDefaultRuleRegistry(false))
-
-  // ----------------------------
-  // Reactive Proof State
-  // ----------------------------
-  const assumptions = ref<Formula[]>([atom('A')])
-
-  const state = ref<ProofState>(emptyProofState([], assumptions.value))
+  const state = ref<ProofState>(emptyProofState())
   const stateHistory = ref<ProofState[]>([])
-  stateHistory.value.push(state.value)
+  // stateHistory.value.push(state.value)
   const lastError = ref<string | null>(null)
+
+  let axioms = reactive(state.value.axioms)
+  let rules = reactive(state.value.rules)
 
   const goal = ref<Formula>(imp(atom('B'), atom('A')))
   const initialized = ref(false)
@@ -57,6 +57,8 @@ export const useProofStore = defineStore('proof', () => {
 
     assumptions.value = parsedAssumptions
     state.value = emptyProofState([], parsedAssumptions, extendedRuleset)
+    axioms = state.value.axioms
+    rules = state.value.rules
     stateHistory.value = [state.value]
     goal.value = parsedGoal
     initialized.value = true
@@ -161,15 +163,20 @@ export const useProofStore = defineStore('proof', () => {
 
   function addJustification(j: VisualJustification) {
     const formula = parseFormula(j.formula)
+
     switch (j.category) {
       case 'assumption':
         assumptions.value.push(formula)
         return
       case 'axiom':
-        axioms.add({ name: j.name, schema: formula })
+        axioms.add({ name: j.name, schema: makeSchemaVariables(formula) })
         return
       case 'rule':
-        rules.register({ name: j.name, premises: j.inputs ?? [], conclusion: formula })
+        rules.register({
+          name: j.name,
+          premises: j.inputs?.map((i) => makeSchemaVariables(i)) ?? [],
+          conclusion: makeSchemaVariables(formula),
+        })
         return
     }
   }

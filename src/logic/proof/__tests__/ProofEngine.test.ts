@@ -116,4 +116,36 @@ describe('ProofEngine - addStep', () => {
 
     expect(r1.success).toBe(true)
   })
+
+  it('accepts new rules', () => {
+    const state0 = emptyProofState(undefined, [A], false)
+
+    state0.rules.register({
+      name: 'Test',
+      premises: [atom('?B')],
+      conclusion: imp(atom('?B'), atom('?B')),
+    })
+
+    const r1 = addStep(state0, A, { kind: 'assumption' })
+
+    const state1 = r1.state!
+
+    const r2 = addStep(state1, imp(A, A), { kind: 'rule', ruleName: 'Test', from: [0] })
+
+    expect(r2.success).toBe(true)
+  })
+
+  it('accepts new rules with no premises', () => {
+    const state0 = emptyProofState(undefined, undefined, false)
+
+    state0.rules.register({
+      name: 'Test',
+      premises: [],
+      conclusion: imp(atom('?B'), atom('?B')),
+    })
+
+    const r1 = addStep(state0, imp(A, A), { kind: 'rule', ruleName: 'Test', from: [] })
+
+    expect(r1.success).toBe(true)
+  })
 })
