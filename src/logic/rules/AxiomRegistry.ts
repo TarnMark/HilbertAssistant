@@ -12,7 +12,6 @@ export class AxiomRegistry {
   }
 
   remove(axiom: string) {
-    console.log(this.axioms.keys())
     if (!this.axioms.delete(axiom)) {
       throw new Error('No such axiom found: ' + axiom)
     }
@@ -36,7 +35,7 @@ export function createDefaultAxiomRegistry(): AxiomRegistry {
   // p->(q->p)
   registry.add({
     name: 'H1',
-    schema: imp(atom('?P'), imp(atom('?Q'), atom('?P'))),
+    schema: imp(atom('?F'), imp(atom('?G'), atom('?F'))),
   })
 
   // H2
@@ -45,15 +44,15 @@ export function createDefaultAxiomRegistry(): AxiomRegistry {
   registry.add({
     name: 'H2',
     schema: imp(
-      imp(atom('?P'), imp(atom('?Q'), atom('?R'))),
-      imp(imp(atom('?P'), atom('?Q')), imp(atom('?P'), atom('?R'))),
+      imp(atom('?F'), imp(atom('?G'), atom('?H'))),
+      imp(imp(atom('?F'), atom('?G')), imp(atom('?F'), atom('?H'))),
     ),
   })
   // H3
   //(¬p→¬q)→(q→p)
   registry.add({
     name: 'H3',
-    schema: imp(imp(not(atom('?P')), not(atom('?Q'))), imp(atom('?Q'), atom('?P'))),
+    schema: imp(imp(not(atom('?F')), not(atom('?G'))), imp(atom('?G'), atom('?F'))),
   })
 
   return registry

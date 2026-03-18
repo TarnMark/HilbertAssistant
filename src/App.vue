@@ -1,15 +1,21 @@
 <template>
-  <div class="app-root">
+  <InitModal v-if="!store.initialized" />
+
+  <div v-else class="app-root">
     <TopBar />
     <MainLayout />
-    <AppFooter />
+    <!-- <AppFooter /> -->
   </div>
 </template>
 
 <script setup lang="ts">
 import TopBar from './components/TopBar.vue'
 import MainLayout from './components/MainLayout.vue'
-import AppFooter from './components/AppFooter.vue'
+// import AppFooter from './components/AppFooter.vue'
+import { useProofStore } from './stores/proofStore';
+import InitModal from './components/InitModal.vue';
+
+const store = useProofStore()
 </script>
 
 <style>

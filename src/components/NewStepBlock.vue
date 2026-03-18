@@ -12,26 +12,42 @@
 
             <div class="field">
                 <label>Justification</label>
-                <select v-model="selected">
-                    <option v-for="j in store.availableJustifications" :key="j.name" :value="j.name">
+                <select v-model="draft.justification">
+                    <option
+                        v-for="j in store.availableJustifications/*.map(j => j.name).filter((name, index, arr) => arr.indexOf(name) === index)*/"
+                        :key="j.name" :value="j.name">
                         {{ j.name }}
                     </option>
                 </select>
             </div>
 
-            <div v-if="requiresInputs" class="field">
+            <div v-if="requiredInputs > 0" class="field">
                 <label>Input Steps</label>
-                <div class="inputs">
-                    <label v-for="step in store.steps" :key="step.index" class="input-option">
-                        <input type="checkbox" :value="step.index" v-model="inputs" />
-                        ({{ step.index }})
-                    </label>
+                <div v-if="requiredInputs > 0" class="rule-info">
+                    {{ draftStep.inputs.length }} / {{ requiredInputs }} inputs
+                </div>
+                <div class="input-slots">
+                    <div v-for="(slot, index) in requiredInputs" :key="index" class="input-slot"
+                        :class="{ filled: draftStep.inputs[index] != null }" @click="draft.inputs[index] = null">
+
+                        <!-- Filled -->
+                        <span v-if="draft.inputs[index] != null">
+                            {{ draft.inputs[index] + 1 }}
+                        </span>
+
+                        <!-- Placeholder -->
+                        <span v-else class="placeholder">
+                            {{ formulaToString(selectedJustification?.inputs![index]!) }}
+                        </span>
+
+                    </div>
                 </div>
             </div>
 
             <div class="field">
                 <label>Formula</label>
-                <input class="formula-input" v-model="formula" placeholder="A → (B → A)" />
+                <FormulaInput v-model="draft.formula" />
+                <!-- <input class="formula-input" v-model="draft.formula" placeholder="A > (-B > A)" /> -->
             </div>
 
         </div>
@@ -39,7 +55,7 @@
         <div class="actions">
             <span class="error" v-if="error">{{ error }}</span>
 
-            <button class="btn-primary" @click="commit">
+            <button class="btn-primary" @click="commit" :disabled="!draft.justification || inputsFilled">
                 Commit Step
             </button>
 
@@ -52,39 +68,58 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useProofStore } from '../stores/proofStore'
-import { toJust, type VisualJustification } from '@/helpers';
+import { toJust } from '@/helpers';
+import FormulaInput from './FormulaInput.vue';
+import { formulaToString } from '@/logic';
 
-defineProps<{ stepNumber: number }>()
+const props = defineProps<{
+    stepNumber: number, draftStep: {
+        justification: string | null,
+        inputs: (number | null)[],
+        formula: string
+    }
+}>()
+
 const emit = defineEmits(['committed', 'cancel'])
 
 const store = useProofStore()
-
-const selected = ref('')
-const formula = ref('')
-const inputs = ref<number[]>([])
+const draft = reactive(props.draftStep)
 const error = ref<string | null>(null)
 
-const requiresInputs = computed(() => {
-    const j = selectedJustification()
-    return j?.inputs
-})
+watch(
+    () => draft.justification,
+    () => {
+        draft.inputs = []
+    }
+)
 
-function selectedJustification(): VisualJustification | undefined {
-    return store.availableJustifications.find(j => j.name === selected.value);
-}
+const selectedJustification = computed(() =>
+    store.availableJustifications.find(j => j.name === draft.justification)
+)
+
+const requiredInputs = computed(() =>
+    selectedJustification.value?.inputs?.length ?? 0
+)
+
+const inputsFilled = computed(() =>
+    draft.inputs.length < requiredInputs.value || draft.inputs.some(i => i === null)
+)
 
 
 function commit() {
-    const selected = selectedJustification()
+    const selected = selectedJustification.value
     if (!selected) {
-        error.value = 'No justification selectd'
+        error.value = 'No justification selected'
     }
-    const just = toJust(selected!, inputs.value)
-    // console.log('Committing step: ' + formula.value + '\n' + JSON.stringify(just))
+    if (!inputsFilled.value) {
+        error.value = 'Not enough input steps selected'
+    }
+    const just = toJust(selected!, draft.inputs as number[])
+
     const result = store.commitStep(
-        formula.value,
+        draft.formula,
         just,
     )
 
@@ -106,12 +141,15 @@ function commit() {
     border-radius: 0.75rem;
 
     padding: 1.25rem;
+    margin: 1rem;
 
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
-/*///////////////////////////////////////////////////////////////// */
-/* replace grid with vertical layout */
+.rule-info {
+    font-size: 11px;
+    color: #6b7280;
+}
 
 .fields {
     display: flex;
@@ -132,8 +170,7 @@ function commit() {
 
 /* standard form controls */
 
-select,
-.formula-input {
+select {
     /* width: 100%; */
 
     padding: 0.5rem 0.75rem;
@@ -149,26 +186,17 @@ select,
     outline: none;
 
     transition: border-color 0.15s, box-shadow 0.15s;
-}
 
-
-/* formula specific styling */
-
-.formula-input {
     font-family: monospace;
 }
 
 
-/* focus state matching other inputs */
 
-select:focus,
-.formula-input:focus {
-    border-color: #4f46e5;
+select:focus {
+    /* border: #4f46e5; */
 
     box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
 }
-
-/*///////////////////////////////////////////////////////////////// */
 
 /* header */
 
@@ -232,40 +260,112 @@ input[type="checkbox"] {
 
 
 /* input steps container */
-
-.inputs {
+.input-slots {
     display: flex;
-    flex-wrap: wrap;
+    gap: 8px;
 
-    gap: 0.4rem;
+    padding: 6px;
 
-    padding: 0.35rem;
-
-    border: 1px solid #e5e5e5;
-
-    border-radius: 0.5rem;
+    border: 1px solid #d8dce6;
+    border-radius: 8px;
 
     background: white;
-
-    min-height: 38px;
 }
 
-.input-option {
-    font-size: 0.7rem;
 
-    padding: 0.15rem 0.45rem;
+.input-slot {
+    flex: 1;
 
-    border-radius: 0.35rem;
-
-    background: #f5f5f5;
-
-    border: 1px solid #e5e5e5;
+    min-width: 60px;
+    height: 36px;
 
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    justify-content: center;
+
+    border-radius: 6px;
+
+    border: 1px dashed #c9cfdb;
+
+    font-size: 12px;
+
+    transition: all 0.15s;
+}
+
+
+.input-slot.filled {
+    border-style: solid;
+
+    background: #eef3ff;
+
+    border-color: #1b66d8;
+
+    color: #1b66d8;
+
+    font-weight: 600;
 
     cursor: pointer;
+}
+
+
+.input-slot:hover {
+    border-color: #1b66d8;
+}
+
+.input-slot.filled:hover {
+    background-color: #a1000099;
+    border: 1px solid red;
+}
+
+.placeholder {
+    color: #9aa1ad;
+
+    font-style: italic;
+
+    font-size: 11px;
+
+    text-align: center;
+}
+
+
+.input-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+
+    padding: 6px;
+
+    border-radius: 6px;
+    border: 1px solid #d8dce6;
+
+    background: white;
+
+    min-height: 30px;
+}
+
+
+.input-chip {
+    font-size: 11px;
+
+    background: #eef2ff;
+
+    border-radius: 4px;
+    border: 1px solid #dbe3f2;
+
+    padding: 6px 10px;
+
+    cursor: pointer;
+}
+
+.input-chip:hover {
+    background-color: #a1000099;
+    border: 1px solid red;
+}
+
+
+.input-placeholder {
+    font-size: 11px;
+    color: #9aa1ad;
 }
 
 
@@ -326,6 +426,11 @@ input[type="checkbox"] {
     background: #eeeeee;
 }
 
+.btn-primary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
+}
 
 /* error text */
 

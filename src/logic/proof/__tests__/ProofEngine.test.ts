@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { addStep } from '../ProofEngine'
 
 import { parseFormula } from '@/helpers'
-import { atom, imp } from '../../syntax/Formula'
+import { atom, imp, not } from '../../syntax/Formula'
 import { emptyProofState } from '../ProofState'
 
 describe('ProofEngine - addStep', () => {
@@ -106,5 +106,14 @@ describe('ProofEngine - addStep', () => {
     )
 
     expect(r3.success).toBe(false)
+  })
+
+  // other rules
+  it('accepts rule with no inputs', () => {
+    const state0 = emptyProofState(undefined, undefined, true)
+
+    const r1 = addStep(state0, imp(A, not(not(A))), { kind: 'rule', ruleName: '→¬¬', from: [] })
+
+    expect(r1.success).toBe(true)
   })
 })

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 
 import { addStep } from '@/logic/proof/ProofEngine'
 
@@ -15,10 +15,8 @@ export const useProofStore = defineStore('proof', () => {
   // Core Logic Infrastructure
   // ----------------------------
 
-  const axioms = ref<AxiomRegistry>(createDefaultAxiomRegistry())
-  const rules = ref<RuleRegistry>(createDefaultRuleRegistry())
-  // const validator = new Validator()
-  // TODO: dynamic validator
+  const axioms = reactive(createDefaultAxiomRegistry())
+  const rules = reactive(createDefaultRuleRegistry(false))
 
   // ----------------------------
   // Reactive Proof State
@@ -30,21 +28,41 @@ export const useProofStore = defineStore('proof', () => {
   stateHistory.value.push(state.value)
   const lastError = ref<string | null>(null)
 
-  //   const all = new Map<string, Formula[] | AxiomRegistry | RuleRegistry>()
-  // all.set('assumptions', assumptions.value)
-  // all.set('axioms', axioms)
-  // all.set('rules', rules)
-
-  const goal = ref<string>('B > A')
+  const goal = ref<Formula>(imp(atom('B'), atom('A')))
+  const initialized = ref(false)
 
   const goalAchieved = computed(() =>
     state.value.steps.length == 0
       ? false
-      : formulaEquals(
-          state.value.steps[state.value.steps.length - 1]?.formula!,
-          parseFormula(goal.value),
-        ),
+      : formulaEquals(state.value.steps[state.value.steps.length - 1]?.formula!, goal.value),
   )
+
+  function initializeSession(
+    extendedRuleset: boolean,
+    assumptionStrings: string[],
+    goalString: string,
+  ): { success: boolean; error?: string } {
+    let parsedAssumptions: Formula[] = []
+    let parsedGoal: Formula
+
+    try {
+      parsedAssumptions = assumptionStrings
+        .filter((s) => s.trim().length > 0)
+        .map((s) => parseFormula(s))
+
+      parsedGoal = parseFormula(goalString)
+    } catch {
+      return { success: false, error: 'Invalid formula syntax.' }
+    }
+
+    assumptions.value = parsedAssumptions
+    state.value = emptyProofState([], parsedAssumptions, extendedRuleset)
+    stateHistory.value = [state.value]
+    goal.value = parsedGoal
+    initialized.value = true
+
+    return { success: true }
+  }
 
   // ----------------------------
   // Derived Data (UI-facing)
@@ -57,24 +75,25 @@ export const useProofStore = defineStore('proof', () => {
       name: 'Hypothesis',
       formula: formulaToString(a),
       category: 'assumption' as const,
-      inputs: false,
+      // inputs: false,
     })),
 
-    ...axioms.value.getAll().map((a) => ({
+    ...axioms.getAll().map((a) => ({
       name: a.name,
       formula: formulaToString(a.schema),
       category: 'axiom' as const,
-      inputs: false,
+      // inputs: false,
     })),
 
-    ...rules.value.getAll().map((r) => ({
+    ...rules.getAll().map((r) => ({
       name: r.name,
       formula:
         r.premises?.map((f) => formulaToString(f)).join(', ') +
-        ' => ' +
+        (r.premises?.length ? ' => ' : '') +
         formulaToString(r.conclusion),
       category: 'rule' as const,
-      inputs: true,
+      inputs: r.premises ?? [],
+      // inputs: true,
     })),
   ])
 
@@ -86,6 +105,8 @@ export const useProofStore = defineStore('proof', () => {
     formulaString: string,
     justification: Justification,
   ): { success: boolean; error?: string } {
+    if (!initialized.value) return { success: false, error: 'Session is not initialized yet.' }
+
     lastError.value = null
 
     let parsedFormula
@@ -96,8 +117,8 @@ export const useProofStore = defineStore('proof', () => {
       return { success: false, error: 'Invalid formula syntax.' }
     }
 
-    state.value.axioms = axioms.value
-    state.value.rules = rules.value
+    state.value.axioms = axioms
+    state.value.rules = rules
     const result = addStep(state.value, parsedFormula, justification)
 
     if (!result.success) {
@@ -130,10 +151,25 @@ export const useProofStore = defineStore('proof', () => {
         )
         return
       case 'axiom':
-        axioms.value.remove(j.name)
+        axioms.remove(j.name)
         return
       case 'rule':
-        rules.value.remove(j.name)
+        rules.remove(j.name)
+        return
+    }
+  }
+
+  function addJustification(j: VisualJustification) {
+    const formula = parseFormula(j.formula)
+    switch (j.category) {
+      case 'assumption':
+        assumptions.value.push(formula)
+        return
+      case 'axiom':
+        axioms.add({ name: j.name, schema: formula })
+        return
+      case 'rule':
+        rules.register({ name: j.name, premises: j.inputs ?? [], conclusion: formula })
         return
     }
   }
@@ -143,8 +179,9 @@ export const useProofStore = defineStore('proof', () => {
     steps,
     // stateHistory,
     // state,
-    axioms,
-    rules,
+    // axioms,
+    // rules,
+    initialized,
     goal,
     goalAchieved,
     lastError,
@@ -154,5 +191,7 @@ export const useProofStore = defineStore('proof', () => {
     commitStep,
     undoStep,
     removeJustification,
+    addJustification,
+    initializeSession,
   }
 })

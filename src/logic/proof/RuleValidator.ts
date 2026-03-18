@@ -16,26 +16,31 @@ export function validateInferenceRule(
 
   const bindings = new Map<string, Formula>()
 
-  for (let k = 0; k < rule.premises.length; k++) {
-    const index = premiseIndices[k]!
+  if (rule.premises.length === 0) {
+    const ok = matchWithBindings(rule.conclusion, conclusion, bindings)
 
-    // checks if the referenced step is from the future
-    if (index >= stepIndex) {
-      return { success: false }
-    }
+    if (!ok) return { success: false }
+  } else {
+    for (let k = 0; k < rule.premises.length; k++) {
+      const index = premiseIndices[k]!
 
-    const step = state.steps[index]
-    if (!step) {
-      return { success: false }
-    }
+      // checks if the referenced step is from the future
+      if (index >= stepIndex) {
+        return { success: false }
+      }
 
-    const ok = matchWithBindings(rule.premises[k]!, step.formula, bindings)
+      const step = state.steps[index]
+      if (!step) {
+        return { success: false }
+      }
 
-    if (!ok) {
-      return { success: false }
+      const ok = matchWithBindings(rule.premises[k]!, step.formula, bindings)
+
+      if (!ok) {
+        return { success: false }
+      }
     }
   }
-
   // instantiate conclusion
   const instantiated = instantiate(rule.conclusion, bindings)
 
@@ -51,7 +56,7 @@ export function instantiate(pattern: Formula, bindings: Map<string, Formula>): F
     const bound = bindings.get(pattern.name)
 
     if (!bound) {
-      throw new Error('Unbound schema variable: ${pattern.name}')
+      throw new Error('Unbound schema variable:' + pattern.name)
     }
 
     return bound

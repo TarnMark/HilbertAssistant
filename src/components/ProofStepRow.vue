@@ -33,6 +33,15 @@ defineProps<{ step: ProofStep }>()
 
 .proof-step:hover {
     background-color: #fafafa;
+    cursor: pointer;
+}
+
+.proof-step.selected>.content {
+    background-color: #e7f8ff;
+}
+
+.proof-step.selected>.gutter {
+    border-left: 3px solid #1b66d8;
 }
 
 /* gutter column (like code editor line numbers) */

@@ -10,11 +10,15 @@ export interface ProofState {
   steps: ProofStep[]
 }
 
-export function emptyProofState(steps: ProofStep[] = [], assumptions: Formula[] = []): ProofState {
+export function emptyProofState(
+  steps: ProofStep[] = [],
+  assumptions: Formula[] = [],
+  extendedRuleset: boolean = false,
+): ProofState {
   return {
     assumptions,
     axioms: createDefaultAxiomRegistry(),
-    rules: createDefaultRuleRegistry(),
+    rules: createDefaultRuleRegistry(extendedRuleset),
     steps: steps,
   }
 }

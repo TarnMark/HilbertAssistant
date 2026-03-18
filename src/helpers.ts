@@ -18,7 +18,7 @@ export function parseFormula(input: string): Formula {
   function parseImplication(): Formula {
     const left = parseUnary()
 
-    if (peek() === '>') {
+    if (peek() === '>' || peek() === '→') {
       consume() // >
       const right = parseImplication() // right associative
       return imp(left, right)
@@ -30,7 +30,7 @@ export function parseFormula(input: string): Formula {
   function parseUnary(): Formula {
     const ch = peek()
 
-    if (ch === '-') {
+    if (ch === '-' || ch === '¬') {
       consume()
       return not(parseUnary())
     }
@@ -65,7 +65,7 @@ export type VisualJustification = {
   name: string
   formula: string
   category: 'assumption' | 'axiom' | 'rule'
-  inputs: boolean
+  inputs?: Formula[] //boolean
 }
 
 export function toJust(visual: VisualJustification, from?: number[]): Justification {

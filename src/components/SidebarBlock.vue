@@ -1,18 +1,26 @@
 <template>
     <div class="formula-section">
-        <h3 class="section-title">
-            {{ title }}
-        </h3>
+        <div class="section-header">
+            <h3 class="section-title">{{ title }}</h3>
+
+            <button class="add-btn" @click="creating = true">
+                +
+            </button>
+        </div>
 
         <div class="formula-list">
-            <div v-for="formula in formulas" :key="formula.name" class="formula-card">
+            <NewJustificationCard v-if="creating" :allowName="have_names" :allowPremises="have_premises"
+                @cancel="creating = false" @create="createFormula" />
+
+            <div v-for="formula in formulas" :key="formula.name" class="formula-card"
+                @click="$emit('select-justification', formula.name)">
                 <div class="formula-name">{{ formula.name }}</div>
 
                 <div class="formula-desc">
                     {{ formula.formula }}
                 </div>
 
-                <button @click="store.removeJustification(formula)" class="delete-btn">
+                <button @click.stop="store.removeJustification(formula)" class="delete-btn">
                     ✕
                 </button>
             </div>
@@ -23,8 +31,19 @@
 <script setup lang="ts">
 import type { VisualJustification } from '@/helpers';
 import { useProofStore } from '@/stores/proofStore';
-defineProps<{ title: string, formulas: VisualJustification[] }>()
+import NewJustificationCard from './NewJustificationCard.vue';
+import { ref } from 'vue';
+defineProps<{ title: string, formulas: VisualJustification[], have_names?: boolean, have_premises?: boolean }>()
+
 const store = useProofStore()
+
+const creating = ref(false)
+defineEmits(["select-justification"])
+
+function createFormula(justification: VisualJustification) {
+    store.addJustification(justification)
+    creating.value = false
+}
 </script>
 
 <style scoped>
@@ -45,6 +64,32 @@ const store = useProofStore()
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+}
+
+.add-btn {
+    margin-left: auto;
+
+    width: 22px;
+    height: 22px;
+
+    background: none;
+    border: none;
+
+    font-size: 1.2rem;
+    color: #d4d4d4;
+
+    cursor: pointer;
+
+    transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.add-btn:hover {
+    color: #2563eb;
 }
 
 /* container for rows (space-y-3) */
@@ -75,6 +120,11 @@ const store = useProofStore()
     border-color: #e5e5e5;
     background: #f8f8f8;
 } */
+.formula-card:hover {
+    background: #f4f7ff;
+    border-color: #1b66d8;
+    cursor: pointer;
+}
 
 /* formula name */
 .formula-name {

@@ -12,7 +12,7 @@ export function formatJustification(j: Justification): string {
     case 'axiom':
       return `Axiom ${j.schemaName}`
     case 'rule':
-      return `${j.ruleName} ${j.from.join(', ')}`
+      return `${j.ruleName} ${j.from.map((n) => n + 1).join(', ')}`
   }
 }
 

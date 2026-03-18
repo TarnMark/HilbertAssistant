@@ -10,13 +10,14 @@
 
         <div class="goal">
             <h3 class="goal-label">Goal</h3>
-            <div class="goal-formula">{{ store.goal }}</div>
+            <div class="goal-formula">{{ formulaToString(store.goal) }}</div>
             <b v-if="store.goalAchieved">Goal achieved!</b>
         </div>
     </aside>
 </template>
 
 <script setup lang="ts">
+import { formulaToString } from '@/logic';
 import { useProofStore } from '../stores/proofStore'
 const store = useProofStore()
 </script>
