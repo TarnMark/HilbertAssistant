@@ -2,7 +2,7 @@
   <InitModal v-if="!store.initialized" />
 
   <div v-else class="app-root">
-    <TopBar />
+    <TopBar @reset="store.initialized = false" />
     <MainLayout />
     <!-- <AppFooter /> -->
   </div>

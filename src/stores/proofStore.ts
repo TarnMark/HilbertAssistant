@@ -16,17 +16,17 @@ import {
 } from '@/logic/syntax/Formula'
 import { emptyProofState, formatJustification, type Justification, type ProofState } from '@/logic'
 import { parseFormula, type VisualJustification } from '@/helpers'
+import { AssumptionRegistry } from '@/logic/rules/AssumptionRegistry'
 
 export const useProofStore = defineStore('proof', () => {
-  const assumptions = ref<Formula[]>([])
-
   const state = ref<ProofState>(emptyProofState())
   const stateHistory = ref<ProofState[]>([])
   // stateHistory.value.push(state.value)
   const lastError = ref<string | null>(null)
 
-  let axioms = reactive(state.value.axioms)
-  let rules = reactive(state.value.rules)
+  const assumptions = computed(() => state.value.assumptions)
+  const axioms = computed(() => state.value.axioms)
+  const rules = computed(() => state.value.rules)
 
   const goal = ref<Formula>(imp(atom('B'), atom('A')))
   const initialized = ref(false)
@@ -55,10 +55,10 @@ export const useProofStore = defineStore('proof', () => {
       return { success: false, error: 'Invalid formula syntax.' }
     }
 
-    assumptions.value = parsedAssumptions
     state.value = emptyProofState([], parsedAssumptions, extendedRuleset)
-    axioms = state.value.axioms
-    rules = state.value.rules
+    // assumptions = state.value.assumptions
+    // axioms = state.value.axioms
+    // rules = state.value.rules
     stateHistory.value = [state.value]
     goal.value = parsedGoal
     initialized.value = true
@@ -73,26 +73,23 @@ export const useProofStore = defineStore('proof', () => {
   const steps = computed(() => state.value.steps)
 
   const availableJustifications = computed<VisualJustification[]>(() => [
-    ...assumptions.value.map((a) => ({
-      name: 'Hypothesis',
-      formula: formulaToString(a),
+    ...assumptions.value.getAll().map((a) => ({
+      name: a.name,
+      formula: formulaToString(a.formula),
       category: 'assumption' as const,
       // inputs: false,
     })),
 
-    ...axioms.getAll().map((a) => ({
+    ...axioms.value.getAll().map((a) => ({
       name: a.name,
       formula: formulaToString(a.schema),
       category: 'axiom' as const,
-      // inputs: false,
+      inputs: a.inputs,
     })),
 
-    ...rules.getAll().map((r) => ({
+    ...rules.value.getAll().map((r) => ({
       name: r.name,
-      formula:
-        r.premises?.map((f) => formulaToString(f)).join(', ') +
-        (r.premises?.length ? ' => ' : '') +
-        formulaToString(r.conclusion),
+      formula: formulaToString(r.conclusion),
       category: 'rule' as const,
       inputs: r.premises ?? [],
       // inputs: true,
@@ -119,8 +116,8 @@ export const useProofStore = defineStore('proof', () => {
       return { success: false, error: 'Invalid formula syntax.' }
     }
 
-    state.value.axioms = axioms
-    state.value.rules = rules
+    state.value.axioms = axioms.value
+    state.value.rules = rules.value
     const result = addStep(state.value, parsedFormula, justification)
 
     if (!result.success) {
@@ -147,16 +144,13 @@ export const useProofStore = defineStore('proof', () => {
   function removeJustification(j: VisualJustification) {
     switch (j.category) {
       case 'assumption':
-        assumptions.value.splice(
-          assumptions.value.findIndex((f) => f === parseFormula(j.formula)),
-          1,
-        )
+        assumptions.value.remove(j.name)
         return
       case 'axiom':
-        axioms.remove(j.name)
+        axioms.value.remove(j.name)
         return
       case 'rule':
-        rules.remove(j.name)
+        rules.value.remove(j.name)
         return
     }
   }
@@ -166,13 +160,13 @@ export const useProofStore = defineStore('proof', () => {
 
     switch (j.category) {
       case 'assumption':
-        assumptions.value.push(formula)
+        assumptions.value.add({ name: j.name, formula })
         return
       case 'axiom':
-        axioms.add({ name: j.name, schema: makeSchemaVariables(formula) })
+        axioms.value.add({ name: j.name, schema: makeSchemaVariables(formula) })
         return
       case 'rule':
-        rules.register({
+        rules.value.register({
           name: j.name,
           premises: j.inputs?.map((i) => makeSchemaVariables(i)) ?? [],
           conclusion: makeSchemaVariables(formula),
@@ -187,6 +181,7 @@ export const useProofStore = defineStore('proof', () => {
     // stateHistory,
     // state,
     // axioms,
+    // assumptions,
     // rules,
     initialized,
     goal,

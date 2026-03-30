@@ -3,12 +3,12 @@ import type { Formula } from '../syntax/Formula'
 export type Justification =
   | { kind: 'axiom'; schemaName: string }
   | { kind: 'rule'; ruleName: string; from: number[] }
-  | { kind: 'assumption' }
+  | { kind: 'assumption'; name: string }
 
 export function formatJustification(j: Justification): string {
   switch (j.kind) {
     case 'assumption':
-      return 'Hypothesis'
+      return j.name
     case 'axiom':
       return `Axiom ${j.schemaName}`
     case 'rule':

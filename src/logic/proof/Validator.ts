@@ -4,8 +4,9 @@ import type { ProofState } from './ProofState'
 import type { ProofStep } from './ProofStep'
 
 import { matchAxiomSchema } from '../rules/AxiomSchema'
-import { formulaEquals } from '../syntax/Formula'
+import { formulaEquals, type Formula } from '../syntax/Formula'
 import { validateInferenceRule } from './RuleValidator'
+import type { Assumption } from '../rules/AssumptionRegistry'
 
 export interface ValidationResult {
   success: boolean
@@ -24,7 +25,7 @@ export function validateStep(state: ProofState, step: ProofStep): ValidationResu
       return validateInferenceRule(rule, state, step.justification.from, step.formula, step.index)
 
     case 'assumption':
-      return validateAssumption(state, step)
+      return validateAssumption(step, state.assumptions.getAll())
 
     default:
       return {
@@ -59,13 +60,25 @@ export function validateStep(state: ProofState, step: ProofStep): ValidationResu
     return { success: true }
   }
 
-  function validateAssumption(state: ProofState, step: ProofStep): ValidationResult {
-    const exists = state.assumptions.some((a) => formulaEquals(a, step.formula))
+  function validateAssumption(step: ProofStep, assumptions: Assumption[]): ValidationResult {
+    if (step.justification.kind !== 'assumption') return { success: false }
+    const formula = assumptions.find(
+      (a) => step.justification.kind === 'assumption' && a.name === step.justification.name,
+    )
 
-    if (!exists) {
+    if (!formula) {
       return {
         success: false,
         error: { code: 'invalid_assumption' },
+      }
+    }
+
+    const result = formulaEquals(formula.formula, step.formula)
+
+    if (!result) {
+      return {
+        success: false,
+        error: { code: 'assumption_mismatch' },
       }
     }
 

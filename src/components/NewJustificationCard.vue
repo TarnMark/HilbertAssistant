@@ -1,16 +1,10 @@
 <template>
     <div class="formula-card new">
 
-        <div class="field">
+        <div v-if="allowName" class="field">
             <label>Name</label>
-            <input v-if="allowName" v-model="name" placeholder="Justification name" />
-            <div v-else class="formula-name">Hypothesis</div>
-        </div>
-
-        <div class="field">
-            <label>Formula</label>
-            <!-- <input v-model="formula" placeholder="A → B" /> -->
-            <FormulaInput v-model="formula" />
+            <input v-model="name" placeholder="Justification name" />
+            <!-- <div v-else class="formula-name">{{  }}</div> -->
         </div>
 
         <div v-if="allowPremises" class="field">
@@ -34,13 +28,19 @@
             </button>
         </div>
 
-        <div class="actions">
-            <button class="primary-btn" @click="submit">
-                Add
-            </button>
+        <div class="field">
+            <label>Formula</label>
+            <!-- <input v-model="formula" placeholder="A → B" /> -->
+            <FormulaInput v-model="formula" />
+        </div>
 
+        <div class="actions">
             <button class="secondary-btn" @click="$emit('cancel')">
                 Cancel
+            </button>
+
+            <button class="primary-btn" @click="submit">
+                Add
             </button>
         </div>
 
@@ -100,7 +100,7 @@ function submit() {
 
     color: #7a7a7a;
 
-    margin-bottom: 3px;
+    margin-bottom: 4px;
 
     text-transform: uppercase;
 }

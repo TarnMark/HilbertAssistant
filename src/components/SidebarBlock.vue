@@ -17,7 +17,7 @@
                 <div class="formula-name">{{ formula.name }}</div>
 
                 <div class="formula-desc">
-                    {{ formula.formula }}
+                    {{ visualFormula(formula) }}
                 </div>
 
                 <button @click.stop="store.removeJustification(formula)" class="delete-btn">
@@ -33,7 +33,8 @@ import type { VisualJustification } from '@/helpers';
 import { useProofStore } from '@/stores/proofStore';
 import NewJustificationCard from './NewJustificationCard.vue';
 import { ref } from 'vue';
-defineProps<{ title: string, formulas: VisualJustification[], have_names?: boolean, have_premises?: boolean }>()
+import { formulaToString } from '@/logic';
+const props = defineProps<{ title: string, formulas: VisualJustification[], have_names?: boolean, have_premises?: boolean }>()
 
 const store = useProofStore()
 
@@ -41,8 +42,14 @@ const creating = ref(false)
 defineEmits(["select-justification"])
 
 function createFormula(justification: VisualJustification) {
+    if (!props.have_names) justification.name = 'H' + (props.formulas.length + 1)
     store.addJustification(justification)
     creating.value = false
+}
+function visualFormula(formula: VisualJustification): string {
+    if (formula.category === 'rule')
+        return formula.inputs?.map((f) => formulaToString(f)).join(', ') + (formula.inputs?.length ? ' ⊢ ' : '') + formula.formula
+    return formula.formula
 }
 </script>
 

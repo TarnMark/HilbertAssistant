@@ -4,8 +4,8 @@
         <SidebarBlock :formulas="store.availableJustifications.filter(j => j.category === 'assumption')"
             :title="'Hypotheses'" @select-justification="$emit('select-justification', $event)"></SidebarBlock>
 
-        <SidebarBlock :formulas="store.availableJustifications.filter(j => j.category === 'axiom')" :title="'Axioms'"
-            :have_names="true" @select-justification="$emit('select-justification', $event)">
+        <SidebarBlock :formulas="store.availableJustifications.filter(j => j.category === 'axiom')"
+            :title="'Axiom schemas'" :have_names="true" @select-justification="$emit('select-justification', $event)">
         </SidebarBlock>
 
         <SidebarBlock :formulas="store.availableJustifications.filter(j => j.category === 'rule')" :title="'Rules'"

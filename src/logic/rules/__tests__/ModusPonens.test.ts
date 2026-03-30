@@ -18,13 +18,13 @@ describe('Modus Ponens', () => {
     const step0: ProofStep = {
       index: 0,
       formula: A,
-      justification: { kind: 'assumption' },
+      justification: { kind: 'assumption', name: 'H1' },
     }
 
     const step1: ProofStep = {
       index: 1,
       formula: imp(A, B),
-      justification: { kind: 'assumption' },
+      justification: { kind: 'assumption', name: 'H2' },
     }
 
     const step2: ProofStep = {
@@ -44,13 +44,13 @@ describe('Modus Ponens', () => {
     const step0: ProofStep = {
       index: 0,
       formula: B,
-      justification: { kind: 'assumption' },
+      justification: { kind: 'assumption', name: 'A1' },
     }
 
     const step1: ProofStep = {
       index: 1,
       formula: imp(A, B),
-      justification: { kind: 'assumption' },
+      justification: { kind: 'assumption', name: 'A2' },
     }
 
     const step2: ProofStep = {
@@ -70,7 +70,7 @@ describe('Modus Ponens', () => {
     const step0: ProofStep = {
       index: 0,
       formula: A,
-      justification: { kind: 'assumption' },
+      justification: { kind: 'assumption', name: 'A1' },
     }
 
     const step1: ProofStep = {
@@ -90,13 +90,13 @@ describe('Modus Ponens', () => {
     const step0: ProofStep = {
       index: 0,
       formula: A,
-      justification: { kind: 'assumption' },
+      justification: { kind: 'assumption', name: 'A1' },
     }
 
     const step1: ProofStep = {
       index: 1,
       formula: B,
-      justification: { kind: 'assumption' },
+      justification: { kind: 'assumption', name: 'A2' },
     }
 
     const step2: ProofStep = {
@@ -119,13 +119,13 @@ describe('Modus Ponens', () => {
     const step0: ProofStep = {
       index: 0,
       formula: antecedent,
-      justification: { kind: 'assumption' },
+      justification: { kind: 'assumption', name: 'A1' },
     }
 
     const step1: ProofStep = {
       index: 1,
       formula: implication,
-      justification: { kind: 'assumption' },
+      justification: { kind: 'assumption', name: 'A2' },
     }
 
     const step2: ProofStep = {
@@ -145,13 +145,13 @@ describe('Modus Ponens', () => {
     const step0: ProofStep = {
       index: 0,
       formula: not(A),
-      justification: { kind: 'assumption' },
+      justification: { kind: 'assumption', name: 'A1' },
     }
 
     const step1: ProofStep = {
       index: 1,
       formula: imp(A, B),
-      justification: { kind: 'assumption' },
+      justification: { kind: 'assumption', name: 'A2' },
     }
 
     const step2: ProofStep = {

@@ -1,4 +1,4 @@
-import { atom, imp, not } from '../syntax/Formula'
+import { atom, formulaToString, imp, not, type Atom, type Formula } from '../syntax/Formula'
 import type { AxiomSchema } from './AxiomSchema'
 
 export class AxiomRegistry {
@@ -8,6 +8,7 @@ export class AxiomRegistry {
     if (this.axioms.has(axiom.name)) {
       throw new Error('Axiom already exists: ${axiom.name}')
     }
+    axiom.inputs = calculateInputs(axiom.schema)
     this.axioms.set(axiom.name, axiom)
   }
 
@@ -34,7 +35,7 @@ export function createDefaultAxiomRegistry(): AxiomRegistry {
   // H1
   // p->(q->p)
   registry.add({
-    name: 'H1',
+    name: 'A1',
     schema: imp(atom('?F'), imp(atom('?G'), atom('?F'))),
   })
 
@@ -42,7 +43,7 @@ export function createDefaultAxiomRegistry(): AxiomRegistry {
   //(p->(q->r))->((p->q)->(p->r))
 
   registry.add({
-    name: 'H2',
+    name: 'A2',
     schema: imp(
       imp(atom('?F'), imp(atom('?G'), atom('?H'))),
       imp(imp(atom('?F'), atom('?G')), imp(atom('?F'), atom('?H'))),
@@ -51,9 +52,26 @@ export function createDefaultAxiomRegistry(): AxiomRegistry {
   // H3
   //(¬p→¬q)→(q→p)
   registry.add({
-    name: 'H3',
+    name: 'A3',
     schema: imp(imp(not(atom('?F')), not(atom('?G'))), imp(atom('?G'), atom('?F'))),
   })
 
   return registry
+}
+
+function calculateInputs(axiom: Formula): Atom[] {
+  return calculateInputsVars([formulaToString(axiom)]) //.map((a) => atom(a))
+}
+
+export function calculateInputsVars(axioms: string[]): Atom[] {
+  const vars = new Set<string>()
+
+  for (let i = 0; i < axioms.length; i++) {
+    const axiom = axioms[i]
+
+    if (axiom) Array.from(axiom.matchAll(/[A-Z]/g)).forEach((a) => vars.add(a[0]))
+  }
+
+  // console.log(vars)
+  return [...vars].map((a) => atom(a)).sort()
 }

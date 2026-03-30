@@ -28,11 +28,12 @@
                 </div>
                 <div class="input-slots">
                     <div v-for="(slot, index) in requiredInputs" :key="index" class="input-slot"
-                        :class="{ filled: draftStep.inputs[index] != null }" @click="draft.inputs[index] = null">
+                        :class="{ filled: draftStep.inputs[index] != null }"
+                        @click="draft.inputs[index] = null; fillOutput">
 
                         <!-- Filled -->
                         <span v-if="draft.inputs[index] != null">
-                            {{ draft.inputs[index] + 1 }}
+                            {{ draft.inputs[index].index + 1 }}
                         </span>
 
                         <!-- Placeholder -->
@@ -55,12 +56,12 @@
         <div class="actions">
             <span class="error" v-if="error">{{ error }}</span>
 
-            <button class="btn-primary" @click="commit" :disabled="!draft.justification || inputsFilled">
-                Commit Step
-            </button>
-
             <button class="btn-secondary" @click="$emit('cancel')">
                 Cancel
+            </button>
+
+            <button class="btn-primary" @click="commit" :disabled="!draft.justification || inputsNotFilled">
+                Commit Step
             </button>
         </div>
 
@@ -68,17 +69,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useProofStore } from '../stores/proofStore'
 import { toJust } from '@/helpers';
 import FormulaInput from './FormulaInput.vue';
-import { formulaToString } from '@/logic';
+import { formulaToString, matchWithBindings, type Formula, type ProofStep } from '@/logic';
 
 const props = defineProps<{
     stepNumber: number, draftStep: {
         justification: string | null,
-        inputs: (number | null)[],
-        formula: string
+        inputs: (ProofStep | null)[],
+        formula: string,
+        rawFormula?: string
     }
 }>()
 
@@ -91,20 +93,92 @@ const error = ref<string | null>(null)
 watch(
     () => draft.justification,
     () => {
+        error.value = null
         draft.inputs = []
+        draft.formula = ''
+        fillOutput()
     }
 )
 
+watch(
+    () => draft.inputs.filter(i => i !== null).length,
+    () => {
+        fillOutput()
+    }
+)
+
+onMounted(
+    () => {
+        draft.formula = selectedJustification.value?.formula ?? ''
+        draft.rawFormula = draft.formula
+    }
+)
+
+function fillOutput() {
+    // if (inputsNotFilled.value) return
+    draft.rawFormula = selectedJustification.value.formula
+    draft.formula = substitute(draft.rawFormula, substitution.value)
+}
+
+function substitute(
+    formula: string,
+    subst: Record<string, Formula>
+): string {
+    let result = ""
+
+    for (let i = 0; i < formula.length; i++) {
+        const ch = formula[i]!
+
+        if (/[A-Z]/.test(ch)) {
+            if (subst[ch]) {
+                result += `(${formulaToString(subst[ch])})`
+            }
+            else if (subst['?' + ch]) {
+                result += `(${formulaToString(subst['?' + ch]!)})`
+            } else {
+                result += ch
+            }
+        } else {
+            result += ch
+        }
+    }
+
+    return result
+}
+
+
+const substitution = computed<Record<string, Formula>>(() => {
+    if (!selectedJustification.value) return {}
+
+    let subst: Record<string, Formula> | null = {}
+
+    const patterns = selectedJustification.value.inputs ?? []
+    const inputs = draft.inputs
+
+    for (let i = 0; i < patterns.length; i++) {
+        const pattern = patterns[i]
+        const input = inputs[i]?.formula
+
+        if (!pattern || !input) continue
+
+        subst = matchWithBindings(pattern, input, subst)
+        if (!subst) return {}
+    }
+
+    return subst
+})
+
+
 const selectedJustification = computed(() =>
-    store.availableJustifications.find(j => j.name === draft.justification)
+    store.availableJustifications.find(j => j.name === draft.justification)!
 )
 
 const requiredInputs = computed(() =>
     selectedJustification.value?.inputs?.length ?? 0
 )
 
-const inputsFilled = computed(() =>
-    draft.inputs.length < requiredInputs.value || draft.inputs.some(i => i === null)
+const inputsNotFilled = computed(() =>
+    selectedJustification.value?.category === 'rule' && (draft.inputs.length < requiredInputs.value || draft.inputs.some(i => i === null))
 )
 
 
@@ -113,10 +187,10 @@ function commit() {
     if (!selected) {
         error.value = 'No justification selected'
     }
-    if (!inputsFilled.value) {
+    if (!inputsNotFilled.value) {
         error.value = 'Not enough input steps selected'
     }
-    const just = toJust(selected!, draft.inputs as number[])
+    const just = toJust(selected!, draft.inputs.map(i => i!.index) as number[])
 
     const result = store.commitStep(
         draft.formula,
@@ -168,8 +242,6 @@ function commit() {
 }
 
 
-/* standard form controls */
-
 select {
     /* width: 100%; */
 
@@ -189,8 +261,6 @@ select {
 
     font-family: monospace;
 }
-
-
 
 select:focus {
     /* border: #4f46e5; */
@@ -235,7 +305,7 @@ select:focus {
     font-weight: 600;
 }
 
-/* labels */
+
 
 label {
     font-size: 0.65rem;
@@ -248,9 +318,6 @@ label {
 
     text-transform: uppercase;
 }
-
-
-/* inputs */
 
 select,
 input[type="text"],

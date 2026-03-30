@@ -15,12 +15,11 @@ describe('ProofValidator', () => {
       index: 0,
       formula: imp(A, imp(B, A)),
       // formula: parseFormula('A > (B > A)'),
-      justification: { kind: 'axiom', schemaName: 'H1' },
+      justification: { kind: 'axiom', schemaName: 'A1' },
     }
 
     const state = emptyProofState()
 
-    console.log(formulaToString(step.formula))
     const result = validateStep(state, step)
 
     expect(result.success).toBe(true)
@@ -30,7 +29,7 @@ describe('ProofValidator', () => {
     const step: ProofStep = {
       index: 0,
       formula: imp(A, imp(B, B)), // wrong final atom
-      justification: { kind: 'axiom', schemaName: 'H1' },
+      justification: { kind: 'axiom', schemaName: 'A1' },
     }
 
     const state = emptyProofState()

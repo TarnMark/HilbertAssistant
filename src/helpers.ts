@@ -71,7 +71,7 @@ export type VisualJustification = {
 export function toJust(visual: VisualJustification, from?: number[]): Justification {
   switch (visual.category) {
     case 'assumption':
-      return { kind: 'assumption' }
+      return { kind: 'assumption', name: visual.name }
     case 'axiom':
       return {
         kind: 'axiom',

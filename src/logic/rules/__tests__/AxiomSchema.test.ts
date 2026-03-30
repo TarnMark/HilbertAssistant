@@ -11,8 +11,8 @@ describe('Axiom schema matching', () => {
     const result = matchAxiomSchema(schema, instance)
 
     expect(result.success).toBe(true)
-    expect(result.bindings?.get('?A')).toEqual(atom('P'))
-    expect(result.bindings?.get('?B')).toEqual(atom('Q'))
+    expect(result.bindings!['?A']).toEqual(atom('P'))
+    expect(result.bindings!['?B']).toEqual(atom('Q'))
   })
 
   it('fails if repeated schema variable binds inconsistently', () => {

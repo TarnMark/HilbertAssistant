@@ -14,7 +14,7 @@ export function validateInferenceRule(
     return { success: false }
   }
 
-  const bindings = new Map<string, Formula>()
+  const bindings: Record<string, Formula> = {}
 
   if (rule.premises.length === 0) {
     const ok = matchWithBindings(rule.conclusion, conclusion, bindings)
@@ -51,9 +51,9 @@ export function validateInferenceRule(
   return { success: true }
 }
 
-export function instantiate(pattern: Formula, bindings: Map<string, Formula>): Formula {
+export function instantiate(pattern: Formula, bindings: Record<string, Formula>): Formula {
   if (isSchemaVariable(pattern)) {
-    const bound = bindings.get(pattern.name)
+    const bound = bindings[pattern.name]
 
     if (!bound) {
       throw new Error('Unbound schema variable:' + pattern.name)

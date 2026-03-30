@@ -1,17 +1,18 @@
 import type { ProofError } from '../proof/ProofError'
-import { formulaToString, type Formula } from '../syntax/Formula'
+import { formulaToString, type Atom, type Formula } from '../syntax/Formula'
 import { matchWithBindings } from './InferenceRule'
 
 export interface AxiomSchema {
   name: string
   schema: Formula
+  inputs?: Atom[]
 }
 
 export function axiomToString(axiom: AxiomSchema): string {
   return formulaToString(axiom.schema).replace('?', '').toUpperCase()
 }
 
-export type SchemaBindings = Map<string, Formula>
+export type SchemaBindings = Record<string, Formula>
 
 export interface AxiomMatchResult {
   success: boolean
@@ -20,7 +21,7 @@ export interface AxiomMatchResult {
 }
 
 export function matchAxiomSchema(schema: Formula, candidate: Formula): AxiomMatchResult {
-  const bindings: SchemaBindings = new Map()
+  const bindings: SchemaBindings = {}
 
   const success = matchWithBindings(schema, candidate, bindings)
 

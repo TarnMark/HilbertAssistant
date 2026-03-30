@@ -9,6 +9,7 @@ export type ProofErrorCode =
   | 'mp_conclusion_mismatch'
   | 'mp_failed'
   | 'invalid_assumption'
+  | 'assumption_mismatch'
   | 'unknown_rule'
 
 export interface ProofError {

@@ -16,7 +16,7 @@ describe('ProofEngine - addStep', () => {
   it('adds valid axiom step', () => {
     const state = emptyProofState()
 
-    const result = addStep(state, imp(A, imp(B, A)), { kind: 'axiom', schemaName: 'H1' })
+    const result = addStep(state, imp(A, imp(B, A)), { kind: 'axiom', schemaName: 'A1' })
 
     expect(result.success).toBe(true)
     expect(result.state?.steps.length).toBe(1)
@@ -25,7 +25,7 @@ describe('ProofEngine - addStep', () => {
   it('rejects invalid axiom step', () => {
     const state = emptyProofState()
 
-    const result = addStep(state, imp(A, imp(B, B)), { kind: 'axiom', schemaName: 'H1' })
+    const result = addStep(state, imp(A, imp(B, B)), { kind: 'axiom', schemaName: 'A1' })
 
     expect(result.success).toBe(false)
     expect(result.state).toBeUndefined()
@@ -36,7 +36,7 @@ describe('ProofEngine - addStep', () => {
   it('allows inserting assumption', () => {
     const state = emptyProofState([], [A])
 
-    const result = addStep(state, A, { kind: 'assumption' })
+    const result = addStep(state, A, { kind: 'assumption', name: 'H1' })
 
     expect(result.success).toBe(true)
   })
@@ -44,7 +44,7 @@ describe('ProofEngine - addStep', () => {
   it('rejects invalid assumption', () => {
     const state = emptyProofState([], [A])
 
-    const result = addStep(state, B, { kind: 'assumption' })
+    const result = addStep(state, B, { kind: 'assumption', name: 'H1' })
 
     expect(result.success).toBe(false)
   })
@@ -54,11 +54,11 @@ describe('ProofEngine - addStep', () => {
   it('adds valid MP step', () => {
     const state0 = emptyProofState([], [A, AB])
 
-    const r1 = addStep(state0, A, { kind: 'assumption' })
+    const r1 = addStep(state0, A, { kind: 'assumption', name: 'H1' })
 
     const state1 = r1.state!
 
-    const r2 = addStep(state1, AB, { kind: 'assumption' })
+    const r2 = addStep(state1, AB, { kind: 'assumption', name: 'H2' })
 
     const state2 = r2.state!
 
@@ -71,13 +71,13 @@ describe('ProofEngine - addStep', () => {
   it('adds more complicated  MP step', () => {
     const state0 = emptyProofState()
 
-    const r1 = addStep(state0, parseFormula('A>(B>A)'), { kind: 'axiom', schemaName: 'H1' })
+    const r1 = addStep(state0, parseFormula('A>(B>A)'), { kind: 'axiom', schemaName: 'A1' })
 
     const state1 = r1.state!
 
     const r2 = addStep(state1, parseFormula('(A>(B>A))>((A>B)>(A>A))'), {
       kind: 'axiom',
-      schemaName: 'H2',
+      schemaName: 'A2',
     })
 
     const state2 = r2.state!
@@ -91,11 +91,11 @@ describe('ProofEngine - addStep', () => {
   it('rejects invalid MP step', () => {
     const state0 = emptyProofState([], [A, AB])
 
-    const r1 = addStep(state0, A, { kind: 'assumption' })
+    const r1 = addStep(state0, A, { kind: 'assumption', name: 'H1' })
 
     const state1 = r1.state!
 
-    const r2 = addStep(state1, AB, { kind: 'assumption' })
+    const r2 = addStep(state1, AB, { kind: 'assumption', name: 'H2' })
 
     const state2 = r2.state!
 
@@ -126,7 +126,7 @@ describe('ProofEngine - addStep', () => {
       conclusion: imp(atom('?B'), atom('?B')),
     })
 
-    const r1 = addStep(state0, A, { kind: 'assumption' })
+    const r1 = addStep(state0, A, { kind: 'assumption', name: 'H1' })
 
     const state1 = r1.state!
 

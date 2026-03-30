@@ -1,10 +1,11 @@
+import { AssumptionRegistry } from '../rules/AssumptionRegistry'
 import { createDefaultAxiomRegistry, type AxiomRegistry } from '../rules/AxiomRegistry'
 import { createDefaultRuleRegistry, type RuleRegistry } from '../rules/RuleRegistry'
 import type { Formula } from '../syntax/Formula'
 import type { ProofStep } from './ProofStep'
 
 export interface ProofState {
-  assumptions: Formula[]
+  assumptions: AssumptionRegistry
   axioms: AxiomRegistry
   rules: RuleRegistry
   steps: ProofStep[]
@@ -16,7 +17,7 @@ export function emptyProofState(
   extendedRuleset: boolean = false,
 ): ProofState {
   return {
-    assumptions,
+    assumptions: new AssumptionRegistry(assumptions),
     axioms: createDefaultAxiomRegistry(),
     rules: createDefaultRuleRegistry(extendedRuleset),
     steps: steps,
