@@ -4,14 +4,16 @@
     <!-- <pre class="highlight" v-html="highlighted"></pre> -->
 
     <input class="formula-input" ref="inputEl" :autofocus="true" :value="modelValue" @input="formatFormulaInput"
-        placeholder="Enter formula" />
+        :placeholder="t('main.components.input.placeholder')" />
 
     <!-- </div> -->
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 
-// import { computed } from "vue"
+
+const { t } = useI18n()
 
 defineProps<{
     modelValue: string
@@ -29,7 +31,6 @@ function formatFormulaInput(event: Event) {
     value = value.toUpperCase()
     value = value.replace(/[^A-Z()>→\-¬\w]/g, "")
 
-    // update the field and the model
     input.value = value
     emit("update:modelValue", value)
 }

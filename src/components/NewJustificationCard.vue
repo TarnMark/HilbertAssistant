@@ -2,13 +2,12 @@
     <div class="formula-card new">
 
         <div v-if="allowName" class="field">
-            <label>Name</label>
-            <input v-model="name" placeholder="Justification name" />
-            <!-- <div v-else class="formula-name">{{  }}</div> -->
+            <label>{{ t('main.components.newjust.name') }}</label>
+            <input v-model="name" :placeholder="t('main.components.newjust.placeholder')" />
         </div>
 
         <div v-if="allowPremises" class="field">
-            <label>Premises</label>
+            <label>{{ t('main.components.newjust.premises') }}</label>
 
             <div class="premise-list">
 
@@ -24,23 +23,22 @@
             </div>
 
             <button class="secondary-btn" @click="addPremise" v-if="allowPremises">
-                + Add premise
+                + {{ t('main.components.newjust.buttons.add_premise') }}
             </button>
         </div>
 
         <div class="field">
-            <label>Formula</label>
-            <!-- <input v-model="formula" placeholder="A → B" /> -->
+            <label>{{ t('main.components.newjust.formula') }}</label>
             <FormulaInput v-model="formula" />
         </div>
 
         <div class="actions">
             <button class="secondary-btn" @click="$emit('cancel')">
-                Cancel
+                {{ t('main.components.newjust.buttons.cancel') }}
             </button>
 
             <button class="primary-btn" @click="submit">
-                Add
+                {{ t('main.components.newjust.buttons.commit') }}
             </button>
         </div>
 
@@ -48,15 +46,20 @@
 </template>
 
 <script setup lang="ts">
-import { parseFormula } from "@/helpers";
+import { parseFormula } from "@/logic/syntax/Formula";
 import { ref } from "vue"
 import FormulaInput from "./FormulaInput.vue";
+import { useProofStore } from "@/stores/proofStore";
+import { useI18n } from "vue-i18n";
+import type { AppError } from "@/logic/proof/AppError";
 const props = defineProps<{
     allowName?: boolean,
     allowPremises?: boolean
 }>()
 
 const emit = defineEmits(["create", "cancel"])
+const store = useProofStore()
+const { t } = useI18n()
 
 const name = ref("")
 const formula = ref("")
@@ -71,11 +74,19 @@ function removePremise(i: number) {
 }
 
 function submit() {
+    let inputs
+    try {
+        inputs = premises.value.filter(f => f.length > 0).map(f => parseFormula(f, true))
+    } catch (e) {
+        store.setStatus({ kind: 'error', error: (e as AppError) })
+        return
+    }
+
     emit("create", {
         name: props.allowName ? name.value : 'Hypothesis',
         category: !props.allowName ? 'assumption' : !props.allowPremises ? 'axiom' : 'rule',
         formula: formula.value,
-        inputs: premises.value.filter(f => f.length > 0).map(f => parseFormula(f))
+        inputs
     })
 }
 </script>

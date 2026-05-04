@@ -1,104 +1,126 @@
-import { atom, imp, not } from '../syntax/Formula'
+import { AppError } from '../proof/AppError'
+import { atom, imp, not, type Formula } from '../syntax/Formula'
+import { FormulaRegistry } from './FormulaRegistry'
 import type { InferenceRule } from './InferenceRule'
 
-export class RuleRegistry {
-  rules = new Map<string, InferenceRule>()
+export class RuleRegistry extends FormulaRegistry<InferenceRule> {
+  formulas = new Map<string, InferenceRule>()
 
-  register(rule: InferenceRule) {
-    if (this.rules.has(rule.name)) {
-      throw new Error('Rule already exists: ${rule.name}')
-    }
-    this.rules.set(rule.name, rule)
+  static from(...rules: InferenceRule[]): RuleRegistry {
+    const registry = new RuleRegistry()
+    rules.forEach((r) => registry.tryadd(r))
+    return registry
   }
 
-  remove(rule: string) {
-    if (!this.rules.delete(rule)) {
-      throw new Error('No such rule found: ' + rule)
+  add(rule: InferenceRule) {
+    const name = rule.name
+    if (this.formulas.has(name)) {
+      throw new AppError('feedback.errors.registries.rule_exists', { name })
     }
+    this.formulas.set(name, rule)
+  }
+
+  tryadd(rule: InferenceRule): boolean {
+    if (this.formulas.has(rule.name)) {
+      return false
+    }
+    this.add(rule)
+    return true
+  }
+
+  remove(name: string) {
+    if (!this.formulas.delete(name)) {
+      throw new AppError('feedback.errors.registries.rule_not_found', { name })
+    }
+  }
+
+  tryremove(rule: string): boolean {
+    return this.formulas.delete(rule)
   }
 
   get(name: string) {
-    return this.rules.get(name)
+    return this.formulas.get(name)
   }
 
   getAll(): InferenceRule[] {
-    return Array.from(this.rules.values())
+    return Array.from(this.formulas.values())
   }
-}
 
-export function createDefaultRuleRegistry(extended: boolean): RuleRegistry {
-  const registry = new RuleRegistry()
+  static defaultRegistry(extedned: boolean): RuleRegistry {
+    const F = atom('?F')
+    const G = atom('?G')
+    const H = atom('?H')
 
-  const F = atom('?F')
-  const G = atom('?G')
-  const H = atom('?H')
+    if (!extedned)
+      return RuleRegistry.from({
+        name: 'MP',
+        premises: [F, imp(F, G)],
+        conclusion: G,
+      })
 
-  // default rules
+    return RuleRegistry.from(
+      // MP
+      {
+        name: 'MP',
+        premises: [F, imp(F, G)],
+        conclusion: G,
+      },
 
-  // MP
-  registry.register({
-    name: 'MP',
-    premises: [F, imp(F, G)],
-    conclusion: G,
-  })
+      // HS
+      {
+        name: 'HS',
+        premises: [imp(F, G), imp(G, H)],
+        conclusion: imp(F, H),
+      },
 
-  if (!extended) return registry
+      // CPi
+      {
+        name: 'CPi',
+        premises: [imp(F, G)],
+        conclusion: imp(not(G), not(F)),
+      },
 
-  // HS
-  registry.register({
-    name: 'HS',
-    premises: [imp(F, G), imp(G, H)],
-    conclusion: imp(F, H),
-  })
+      //CPe
+      {
+        name: 'CPe',
+        premises: [imp(not(F), not(G))],
+        conclusion: imp(G, F),
+      },
 
-  // CPi
-  registry.register({
-    name: 'CPi',
-    premises: [imp(F, G)],
-    conclusion: imp(not(G), not(F)),
-  })
+      //¬¬e
+      {
+        name: '¬¬e',
+        premises: [not(not(F))],
+        conclusion: F,
+      },
 
-  //CPe
-  registry.register({
-    name: 'CPe',
-    premises: [imp(not(F), not(G))],
-    conclusion: imp(G, F),
-  })
+      //¬¬→
+      {
+        name: '¬¬→',
+        premises: [],
+        conclusion: imp(not(not(F)), F),
+      },
 
-  //¬¬e
-  registry.register({
-    name: '¬¬e',
-    premises: [not(not(F))],
-    conclusion: F,
-  })
+      //¬¬i
+      {
+        name: '¬¬i',
+        premises: [F],
+        conclusion: not(not(F)),
+      },
 
-  //¬¬→
-  registry.register({
-    name: '¬¬→',
-    premises: [],
-    conclusion: imp(not(not(F)), F),
-  })
+      //→¬¬
+      {
+        name: '→¬¬',
+        premises: [],
+        conclusion: imp(F, not(not(F))),
+      },
 
-  //¬¬i
-  registry.register({
-    name: '¬¬i',
-    premises: [F],
-    conclusion: not(not(F)),
-  })
-
-  //→¬¬
-  registry.register({
-    name: '→¬¬',
-    premises: [],
-    conclusion: imp(F, not(not(F))),
-  })
-
-  //MT
-  registry.register({
-    name: 'MT',
-    premises: [imp(F, G), not(G)],
-    conclusion: not(F),
-  })
-
-  return registry
+      //MT
+      {
+        name: 'MT',
+        premises: [imp(F, G), not(G)],
+        conclusion: not(F),
+      },
+    )
+  }
 }

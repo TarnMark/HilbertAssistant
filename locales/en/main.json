@@ -1,0 +1,47 @@
+{
+  "titles": {
+    "assumptions": "Hypotheses",
+    "axioms": "Axiom Schemas",
+    "rules": "Rules",
+    "goal": "Goal",
+    "progress": "Progress",
+    "feedback": "Status",
+    "error": "Error",
+    "language": "Language"
+  },
+  "buttons": {
+    "new_proof": "New Proof",
+    "add_step": "Add Step",
+    "undo_step": "Undo Step"
+  },
+  "components": {
+    "newstep": {
+      "title": "New Step",
+      "titles": {
+        "justification": "Justification",
+        "steps": "Input Steps",
+        "inputs": "inputs",
+        "schemavars": "Schema Variables",
+        "formula": "Formula"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "commit": "Commit Step"
+      }
+    },
+    "newjust": {
+      "name": "Name",
+      "formula": "Formula",
+      "premises": "Premises",
+      "placeholder": "Justification name",
+      "buttons": {
+        "add_premise": "Add Premise",
+        "commit": "Add",
+        "cancel": "Cancel"
+      }
+    },
+    "input": {
+      "placeholder": "Enter formula"
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "titles": {
+    "assumptions": "Eeldused",
+    "axioms": "Aksioomiskeemid",
+    "rules": "Reeglid",
+    "goal": "Eesmärk",
+    "progress": "Progress",
+    "feedback": "Staatus",
+    "error": "Viga",
+    "language": "Keel"
+  },
+  "buttons": {
+    "new_proof": "Uus tuletus",
+    "add_step": "Lisa samm",
+    "undo_step": "Samm tagasi"
+  },
+  "components": {
+    "newstep": {
+      "title": "Uus samm",
+      "titles": {
+        "justification": "Põhjendus",
+        "steps": "Sisendsammud",
+        "inputs": "sisendit",
+        "schemavars": "Muutujad",
+        "formula": "Valem"
+      },
+      "buttons": {
+        "cancel": "Katkesta",
+        "commit": "Kinnita samm"
+      }
+    },
+    "newjust": {
+      "name": "Nimi",
+      "formula": "Valem",
+      "premises": "Eeldused",
+      "placeholder": "Sisesta nimi",
+      "buttons": {
+        "add_premise": "Lisa eeldus",
+        "commit": "Lisa",
+        "cancel": "Katkesta"
+      }
+    },
+    "input": {
+      "placeholder": "Sisesta valem"
+    }
+  }
+}

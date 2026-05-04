@@ -1,7 +1,8 @@
 import type { ProofState } from '../proof/ProofState'
 import type { InferenceRule } from '../rules/InferenceRule'
 import { isSchemaVariable, matchWithBindings } from '../rules/InferenceRule'
-import { formulaEquals, imp, not, type Formula } from '../syntax/Formula'
+import { atom, formulaEquals, imp, not, type Atom, type Formula } from '../syntax/Formula'
+import { AppError } from './AppError'
 
 export function validateInferenceRule(
   rule: InferenceRule,
@@ -19,7 +20,8 @@ export function validateInferenceRule(
   if (rule.premises.length === 0) {
     const ok = matchWithBindings(rule.conclusion, conclusion, bindings)
 
-    if (!ok) return { success: false }
+    if (!ok)
+      return { success: false, error: new AppError('feedback.errors.validation.rule_mismatch') }
   } else {
     for (let k = 0; k < rule.premises.length; k++) {
       const index = premiseIndices[k]!
@@ -37,7 +39,7 @@ export function validateInferenceRule(
       const ok = matchWithBindings(rule.premises[k]!, step.formula, bindings)
 
       if (!ok) {
-        return { success: false }
+        return { success: false, error: new AppError('feedback.errors.validation.rule_mismatch') }
       }
     }
   }
@@ -45,26 +47,33 @@ export function validateInferenceRule(
   const instantiated = instantiate(rule.conclusion, bindings)
 
   if (!formulaEquals(instantiated, conclusion)) {
-    return { success: false }
+    return { success: false, error: new AppError('feedback.errors.validation.rule_mismatch') }
   }
 
   return { success: true }
 }
 
-export function instantiate(pattern: Formula, bindings: Record<string, Formula>): Formula {
+export function instantiate(
+  pattern: Formula,
+  bindings: Record<string, Formula>,
+  ignoreUnbound = false,
+): Formula {
   if (isSchemaVariable(pattern)) {
-    const bound = bindings[pattern.name]
+    pattern = pattern as Atom
+    const name = pattern.name
+    let bound = bindings[name]
 
     if (!bound) {
-      throw new Error('Unbound schema variable:' + pattern.name)
+      if (!ignoreUnbound) {
+        throw new AppError('feedback.errors.validation.unbound', { name })
+      } else bound = atom(name.charAt(1))!
     }
-
     return bound
   }
 
   switch (pattern.kind) {
-    // case 'atom':
-    //   return atom(pattern.name)
+    case 'atom':
+      return atom(pattern.name)
 
     case 'imp':
       return imp(instantiate(pattern.left, bindings), instantiate(pattern.right, bindings))
@@ -73,6 +82,6 @@ export function instantiate(pattern: Formula, bindings: Record<string, Formula>)
       return not(instantiate(pattern.inner, bindings))
 
     default:
-      throw new Error('Unknown formula kind')
+      throw new AppError('feedback.errors.validation.unknown_formula')
   }
 }

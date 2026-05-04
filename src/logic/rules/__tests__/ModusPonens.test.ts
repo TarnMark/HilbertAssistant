@@ -1,10 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { atom, imp, not } from '../../syntax/Formula'
-import { createDefaultAxiomRegistry } from '../AxiomRegistry'
-import { createDefaultRuleRegistry } from '../RuleRegistry'
 import { emptyProofState } from '@/logic/proof/ProofState'
 import type { ProofStep } from '@/logic/proof/ProofStep'
-import type { ProofState } from '@/logic/proof/ProofState'
 import { validateStep } from '@/logic/proof/Validator'
 
 describe('Modus Ponens', () => {

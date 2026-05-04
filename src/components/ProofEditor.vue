@@ -3,19 +3,19 @@
         <div class="toolbar">
             <button @click="startStep" :disabled="creating || store.goalAchieved" class="btn btn-primary">
                 <span class="icon">+</span>
-                Add Step
+                {{ t('main.buttons.add_step') }}
             </button>
             <button @click="undoStep" :disabled="creating || store.steps.length == 0" class="btn btn-secondary">
                 <span class="icon">↶</span>
-                Undo Step</button>
+                {{ t('main.buttons.undo_step') }}</button>
         </div>
 
         <div class="canvas">
             <ProofStepRow v-for="step in store.steps" :key="step.index" :step="step" @click="addStepInput(step)"
                 :class="{ selected: draftStep.inputs.includes(step) }" />
 
-            <NewStepBlock v-if="creating" :step-number="store.steps.length + 1" @cancel="resetStepCreation(true)"
-                @committed="resetStepCreation(true)" :draftStep="draftStep" />
+            <NewStepBlock v-if="creating" :step-number="store.steps.length + 1" @cancel="onCancel"
+                @committed="onCommitted" :draftStep="draftStep" />
         </div>
     </section>
 </template>
@@ -26,10 +26,12 @@ import { useProofStore } from '../stores/proofStore'
 import ProofStepRow from './ProofStepRow.vue'
 import NewStepBlock from './NewStepBlock.vue'
 import type { ProofStep } from '@/logic'
+import { useI18n } from 'vue-i18n'
 
 const store = useProofStore()
-const creating = ref(false)
+const { t } = useI18n()
 
+const creating = ref(false)
 
 const draftStep = reactive({
     justification: null as string | null,
@@ -41,12 +43,16 @@ function startStep() {
     creating.value = true
 
     resetStepCreation
+    store.setStatus({ kind: 'hint', message: 'feedback.hints.newstep.creating' })
 }
 function startWithData(justification: string) {
     creating.value = true
 
     resetStepCreation
     draftStep.justification = justification
+
+    const just = store.availableJustifications.find(j => j.name === justification)
+    store.setStatus({ kind: 'hint', message: 'feedback.hints.newstep.' + (just?.category ?? 'creating') })
 }
 
 function addStepInput(step: ProofStep) {
@@ -60,21 +66,18 @@ function addStepInput(step: ProofStep) {
 
     if (required === 0) return
 
-    const i = draftStep.inputs.indexOf(step)
+    const i = draftStep.inputs.lastIndexOf(step) // step being added in inputs
+    const n = draftStep.inputs.findIndex(i => i === null) // existing null spots
 
-    if (i !== -1) {
-        // draftStep.inputs.splice(i, 1)
-        draftStep.inputs[i] = null
-        return
-    }
-
-    const n = draftStep.inputs.findIndex(i => i === null)
-    if (n !== -1) {
+    if (n !== -1) { // null/empty spots available
         draftStep.inputs[n] = step
         return
     }
 
-    if (draftStep.inputs.length >= required) return
+    if (draftStep.inputs.length >= required) { // all slots filled - adding existing removes last occurrence
+        if (i !== -1) draftStep.inputs[i] = null
+        return
+    }
     draftStep.inputs.push(step)
 }
 
@@ -88,6 +91,17 @@ function resetStepCreation(close?: boolean) {
     draftStep.formula = ""
 
     if (close) creating.value = false
+}
+
+async function onCommitted() {
+    resetStepCreation(true)
+    await new Promise(resolve => setTimeout(resolve))
+    await store.analyzeStep()
+}
+
+function onCancel() {
+    resetStepCreation(true)
+    store.resetStatus('')
 }
 
 defineExpose({

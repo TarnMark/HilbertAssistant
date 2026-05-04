@@ -1,0 +1,76 @@
+{
+  "errors": {
+    "input": {
+      "end": "Unexpected end of input",
+      "paren": "Expected ')'",
+      "token": "Unexpected token: { ch }",
+      "trailing": "Unexpected trailing input"
+    },
+    "newstep": {
+      "schemavar": "Invalid schema variable input",
+      "justification": "No justification selected",
+      "few_inputs": "Not enough input steps selected",
+      "invalid": "Invalid step",
+      "not_initialized": "Session is not initialized yet",
+      "rejected": "Step rejected"
+    },
+    "validation": {
+      "unknown_justification": "Unknown justification type",
+      "unknown_rule": "Unknown rule: {name}",
+      "unknown_assumption": "Unknown assumption: {name}",
+      "unknown_axiom": "Unknown axiom schema: {name}",
+      "unknown_formula": "Unknown formula kind",
+
+      "axiom_mismatch": "Axiom mismatch",
+      "assumption_mismatch": "Assumption mismatch",
+      "rule_mismatch": "Rule mismatch",
+
+      "unbound": "Unbound schema variable: {name}"
+    },
+    "registries": {
+      "axiom_exists": "Axiom already exists: {name}.",
+      "axiom_not_found": "No such axiom found: {name}.",
+
+      "assumption_exists": "Assumption already exists: {name}.",
+      "assumption_not_found": "No such assumption found: {name}.",
+
+      "rule_exists": "Rule already exists: {name}.",
+      "rule_not_found": "No such rule found: {name}.",
+
+      "empty": "Empty justification formula.",
+      "noname": "Empty justification name."
+    }
+  },
+  "hints": {
+    "feedback": {
+      "good": {
+        "default": "This step improves future possibilities. Goal can be achieved in { score } steps.",
+        "goal": "This step enables reaching the goal. Goal can be achieved in { score } steps.",
+        "no_goal": "This step improves future possibilities."
+      },
+      "neutral": {
+        "default": "This step does not change future potential. Goal can be achieved in { score } steps.",
+        "no_goal": "This step does not change future potential."
+      },
+      "bad": "This step reduces future possibilities or makes the proof more complicated."
+    },
+    "idle": "Make a step or add a justification to receive feedback.",
+    "analyzing": "Analyzing latest step...",
+    "achieved": "✓ Goal achieved",
+
+    "newstep": {
+      "creating": "Choose the justification for the new step.",
+      "assumption": "Fill the assumption formula and confirm.",
+      "axiom": "Select the input steps from the proof, fill in schema variables or type the formula manually and confirm.",
+      "rule": "Select the input steps from the proof and confirm."
+    },
+
+    "newjust": {
+      "assumption": "Enter assumption formula and confirm.",
+      "axiom": "Enter axiom schema name and formula and confirm.",
+      "rule": "Enter rule name, inputs (if any) and output formula and confirm.",
+      "created": "New justification created: {name}.",
+      "deleted": "Justification deleted: {name}."
+    }
+  }
+}

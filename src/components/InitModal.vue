@@ -1,16 +1,16 @@
 <template>
     <div class="overlay">
         <div class="modal">
-            <h2 class="title">Start New Proof Construction</h2>
+            <h2 class="title">{{ t('startup.titles.title') }}</h2>
 
             <div class="section">
-                <label class="section-label">Choose ruleset</label>
-                <RulesetToggle v-model="selectedRuleset" left-label="Hilbert" right-label="Extended"
-                    left-value="hilbert" right-value="extended" />
+                <label class="section-label">{{ t('startup.titles.ruleset') }}</label>
+                <RulesetToggle v-model="selectedRuleset" left-label="startup.options.hilbert"
+                    right-label="startup.options.extended" left-value="hilbert" right-value="extended" />
             </div>
 
             <div class="section">
-                <label class="section-label">Assumptions</label>
+                <label class="section-label">{{ t('startup.titles.assumptions') }}</label>
 
                 <div v-for="(assumption, index) in assumptions" :key="index" class="assumption-row">
                     <FormulaInput v-model="assumptions[index]!" />
@@ -22,19 +22,18 @@
                 </div>
 
                 <button class="btn-secondary add-btn" @click="addAssumption">
-                    Add Assumption
+                    {{ t('startup.buttons.add_assumption') }}
                 </button>
             </div>
 
             <div class="section">
-                <label class="section-label">Goal (required)</label>
+                <label class="section-label">{{ t('startup.titles.goal') }}</label>
                 <FormulaInput v-model="goal" />
-                <!-- <input v-model="goal" class="text-input" placeholder="Enter goal formula" /> -->
             </div>
 
             <div class="actions">
                 <button class="btn-primary" @click="submit">
-                    Start Proof
+                    {{ t('startup.buttons.start') }}
                 </button>
                 <span class="error" v-if="error">
                     {{ error }}
@@ -49,8 +48,11 @@ import { ref } from 'vue'
 import { useProofStore } from '@/stores/proofStore'
 import FormulaInput from './FormulaInput.vue'
 import RulesetToggle from './RulesetToggle.vue'
+import { useI18n } from 'vue-i18n'
+import type { AppError } from '@/logic/proof/AppError'
 
 const store = useProofStore()
+const { t } = useI18n()
 
 const selectedRuleset = ref("hilbert")
 const assumptions = ref<string[]>([])
@@ -68,7 +70,7 @@ function removeAssumption(index: number) {
 
 function submit() {
     if (!goal.value.trim()) {
-        error.value = 'Goal is required.'
+        error.value = t('startup.errors.empty')
         return
     }
 
@@ -79,9 +81,13 @@ function submit() {
     )
 
     if (!result.success) {
-        error.value = result.error ?? 'Initialization failed.'
+        error.value = result.error ? errorMessage(result.error) : t('startup.errors.init')
         return
     }
+}
+
+function errorMessage(error: AppError) {
+    return error.data ? t(error.message, error.data) : t(error.message)
 }
 </script>
 
@@ -89,23 +95,23 @@ function submit() {
 /* overlay */
 
 .overlay {
-    position: fixed;
+    position: absolute;
     inset: 0;
 
-    background: rgba(0, 0, 0, 0.35);
+    /* background: rgba(0, 0, 0, 0.35); */
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    z-index: 1000;
+    z-index: 500;
 }
 
 
 /* modal */
 
 .modal {
-    width: 460px;
+    min-width: 460px;
 
     background: #fafafa;
 

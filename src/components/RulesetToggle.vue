@@ -1,7 +1,7 @@
 <template>
     <div class="toggle-container">
         <span class="label" :class="{ active: !isRight }" @click="selectLeft">
-            {{ leftLabel }}
+            {{ t(leftLabel) }}
         </span>
 
         <div :class="{ right: isRight, switch: true }" @click="toggle">
@@ -9,7 +9,7 @@
         </div>
 
         <span class="label" :class="{ active: isRight }" @click="selectRight">
-            {{ rightLabel }}
+            {{ t(rightLabel) }}
         </span>
     </div>
 </template>
@@ -18,6 +18,9 @@
 
 <script setup lang="ts">
 import { computed } from "vue"
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n()
 
 const props = defineProps<{
     modelValue: string

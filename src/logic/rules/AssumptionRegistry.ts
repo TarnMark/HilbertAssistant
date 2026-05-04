@@ -1,38 +1,60 @@
+import { AppError } from '../proof/AppError'
 import type { Formula } from '../syntax/Formula'
+import { FormulaRegistry } from './FormulaRegistry'
 
 export type Assumption = {
   name: string
   formula: Formula
 }
 
-export class AssumptionRegistry {
-  assumptions = new Map<string, Assumption>()
+export class AssumptionRegistry extends FormulaRegistry<Assumption> {
+  formulas = new Map<string, Assumption>()
 
   constructor(assumptions: Formula[]) {
+    super()
     assumptions.forEach((a, i) => {
       const name = 'H' + (i + 1)
-      this.assumptions.set(name, { name: name, formula: a })
+      this.formulas.set(name, { name: name, formula: a })
     })
   }
 
-  add(assumption: Assumption) {
-    if (this.assumptions.has(assumption.name)) {
-      throw new Error(`Assumption already exists: ${assumption.name}`)
-    }
-    this.assumptions.set(assumption.name, assumption)
+  static from(...assumptions: Assumption[]): AssumptionRegistry {
+    const registry = new AssumptionRegistry([])
+    assumptions.forEach((a) => registry.tryadd(a))
+    return registry
   }
 
-  remove(assumption: string) {
-    if (!this.assumptions.delete(assumption)) {
-      throw new Error('No such assumption found: ' + assumption)
+  add(assumption: Assumption) {
+    const name = assumption.name
+    if (this.formulas.has(name)) {
+      throw new AppError('feedback.errors.registries.assumption_exists', { name })
     }
+    this.formulas.set(name, assumption)
+  }
+
+  tryadd(assumption: Assumption): boolean {
+    if (this.formulas.has(assumption.name)) {
+      return false
+    }
+    this.add(assumption)
+    return true
+  }
+
+  remove(name: string) {
+    if (!this.formulas.delete(name)) {
+      throw new AppError('feedback.errors.registries.assumption_not_found', { name })
+    }
+  }
+
+  tryremove(formula: string): boolean {
+    return this.formulas.delete(formula)
   }
 
   get(name: string) {
-    return this.assumptions.get(name)
+    return this.formulas.get(name)
   }
 
   getAll(): Assumption[] {
-    return Array.from(this.assumptions.values())
+    return Array.from(this.formulas.values())
   }
 }

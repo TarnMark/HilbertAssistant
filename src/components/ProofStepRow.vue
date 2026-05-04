@@ -17,7 +17,8 @@
 </template>
 
 <script setup lang="ts">
-import { formatJustification, formulaToString, type ProofStep } from '@/logic';
+import { formulaToString, type ProofStep } from '@/logic';
+import { formatJustification } from '@/logic/proof/Justification';
 defineProps<{ step: ProofStep }>()
 </script>
 

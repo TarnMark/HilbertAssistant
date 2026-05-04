@@ -2,14 +2,17 @@
     <aside class="sidebar">
 
         <SidebarBlock :formulas="store.availableJustifications.filter(j => j.category === 'assumption')"
-            :title="'Hypotheses'" @select-justification="$emit('select-justification', $event)"></SidebarBlock>
-
-        <SidebarBlock :formulas="store.availableJustifications.filter(j => j.category === 'axiom')"
-            :title="'Axiom schemas'" :have_names="true" @select-justification="$emit('select-justification', $event)">
+            :title="t('main.titles.assumptions')" @select-justification="$emit('select-justification', $event)">
         </SidebarBlock>
 
-        <SidebarBlock :formulas="store.availableJustifications.filter(j => j.category === 'rule')" :title="'Rules'"
-            :have_names="true" :have_premises="true" @select-justification="$emit('select-justification', $event)">
+        <SidebarBlock :formulas="store.availableJustifications.filter(j => j.category === 'axiom')"
+            :title="t('main.titles.axioms')" :have_names="true"
+            @select-justification="$emit('select-justification', $event)">
+        </SidebarBlock>
+
+        <SidebarBlock :formulas="store.availableJustifications.filter(j => j.category === 'rule')"
+            :title="t('main.titles.rules')" :have_names="true" :have_premises="true"
+            @select-justification="$emit('select-justification', $event)">
         </SidebarBlock>
     </aside>
 </template>
@@ -17,8 +20,10 @@
 <script setup lang="ts">
 import { useProofStore } from '@/stores/proofStore';
 import SidebarBlock from './SidebarBlock.vue';
+import { useI18n } from 'vue-i18n';
 
 const store = useProofStore()
+const { t } = useI18n()
 
 defineEmits(['select-justification'])
 

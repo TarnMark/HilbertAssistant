@@ -2,8 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { addStep } from '../ProofEngine'
 
-import { parseFormula } from '@/helpers'
-import { atom, imp, not } from '../../syntax/Formula'
+import { atom, imp, not, parseFormula } from '../../syntax/Formula'
 import { emptyProofState } from '../ProofState'
 
 describe('ProofEngine - addStep', () => {
@@ -120,7 +119,7 @@ describe('ProofEngine - addStep', () => {
   it('accepts new rules', () => {
     const state0 = emptyProofState(undefined, [A], false)
 
-    state0.rules.register({
+    state0.rules.add({
       name: 'Test',
       premises: [atom('?B')],
       conclusion: imp(atom('?B'), atom('?B')),
@@ -138,7 +137,7 @@ describe('ProofEngine - addStep', () => {
   it('accepts new rules with no premises', () => {
     const state0 = emptyProofState(undefined, undefined, false)
 
-    state0.rules.register({
+    state0.rules.add({
       name: 'Test',
       premises: [],
       conclusion: imp(atom('?B'), atom('?B')),

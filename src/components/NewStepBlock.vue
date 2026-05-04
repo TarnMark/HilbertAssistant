@@ -4,27 +4,26 @@
         <div class="header">
             <div class="title">
                 <span class="badge">{{ stepNumber }}</span>
-                New Step
+                {{ t('main.components.newstep.title') }}
             </div>
         </div>
 
         <div class="fields">
 
             <div class="field">
-                <label>Justification</label>
+                <label>{{ t('main.components.newstep.titles.justification') }}</label>
                 <select v-model="draft.justification">
-                    <option
-                        v-for="j in store.availableJustifications/*.map(j => j.name).filter((name, index, arr) => arr.indexOf(name) === index)*/"
-                        :key="j.name" :value="j.name">
+                    <option v-for="j in store.availableJustifications" :key="j.name" :value="j.name">
                         {{ j.name }}
                     </option>
                 </select>
             </div>
 
             <div v-if="requiredInputs > 0" class="field">
-                <label>Input Steps</label>
-                <div class="rule-info">
-                    {{draftStep.inputs.filter(i => i !== null).length}} / {{ requiredInputs }} inputs
+                <label>{{ t('main.components.newstep.titles.steps') }}</label>
+                <div v-if="selectedJustification.category === 'rule'" class="rule-info">
+                    {{draftStep.inputs.filter(i => i !== null).length}} / {{ requiredInputs }} {{
+                        t('main.components.newstep.titles.inputs') }}
                 </div>
                 <div class="input-slots">
                     <div v-for="(slot, index) in requiredInputs" :key="index" class="input-slot"
@@ -44,11 +43,26 @@
                     </div>
                 </div>
             </div>
+            <div v-if="selectedJustification?.category === 'axiom'" class="field">
+
+                <label>{{ t('main.components.newstep.titles.schemavars') }}</label>
+
+                <div class="input-slots">
+
+                    <div v-for="(slot, index) in requiredInputs" :key="index" @focusout="fillOutput"
+                        class="input-slot substitution">
+
+                        <FormulaInput v-model="substitutions[index]!"
+                            :placeholder="formulaToString(selectedJustification.inputs![index]!)" />
+
+                    </div>
+
+                </div>
+            </div>
 
             <div class="field">
-                <label>Formula</label>
+                <label>{{ t('main.components.newstep.titles.formula') }}</label>
                 <FormulaInput v-model="draft.formula" />
-                <!-- <input class="formula-input" v-model="draft.formula" placeholder="A > (-B > A)" /> -->
             </div>
 
         </div>
@@ -57,11 +71,12 @@
             <span class="error" v-if="error">{{ error }}</span>
 
             <button class="btn-secondary" @click="$emit('cancel')">
-                Cancel
+                {{ t('main.components.newstep.buttons.cancel') }}
             </button>
 
-            <button class="btn-primary" @click="commit" :disabled="!draft.justification || inputsNotFilled">
-                Commit Step
+            <button class="btn-primary" @click="commit"
+                :disabled="!draft.justification || inputsNotFilled || store.status.kind === 'analyzing'">
+                {{ t('main.components.newstep.buttons.commit') }}
             </button>
         </div>
 
@@ -71,9 +86,10 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useProofStore } from '../stores/proofStore'
-import { toJust } from '@/helpers';
 import FormulaInput from './FormulaInput.vue';
-import { formulaToString, matchWithBindings, type Formula, type ProofStep } from '@/logic';
+import { formulaToString, matchWithBindings, parseFormula, type Formula, type ProofStep } from '@/logic';
+import { useI18n } from 'vue-i18n';
+import { toJust } from '@/logic/proof/Justification';
 
 const props = defineProps<{
     stepNumber: number, draftStep: {
@@ -86,9 +102,31 @@ const props = defineProps<{
 
 const emit = defineEmits(['committed', 'cancel'])
 
+const { t } = useI18n()
 const store = useProofStore()
 const draft = reactive(props.draftStep)
 const error = ref<string | null>(null)
+
+const requiredInputs = computed(() =>
+    selectedJustification.value?.inputs?.length ?? 0
+)
+
+const selectedJustification = computed(() =>
+    store.availableJustifications.find(j => j.name === draft.justification)!
+)
+
+const inputsNotFilled = computed(() =>
+    selectedJustification.value?.category === 'rule' && (draft.inputs.length < requiredInputs.value || draft.inputs.some(i => i === null))
+)
+
+const defaultSubs = computed<Record<number, string>>(() => {
+    const subs = {} as Record<number, string>
+    for (let index = 0; index < requiredInputs.value; index++) {
+        subs[index] = '';
+    }
+    return subs
+})
+const substitutions = ref<Record<number, string>>(defaultSubs.value)
 
 watch(
     () => draft.justification,
@@ -96,6 +134,7 @@ watch(
         error.value = null
         draft.inputs = []
         draft.formula = ''
+        substitutions.value = defaultSubs.value
         fillOutput()
     }
 )
@@ -107,17 +146,26 @@ watch(
     }
 )
 
+watch(
+    () => substitutions.value,
+    () => {
+        fillOutput()
+    }
+)
+
 onMounted(
     () => {
         draft.formula = selectedJustification.value?.formula ?? ''
+        substitutions.value = defaultSubs.value
         draft.rawFormula = draft.formula
     }
 )
 
 function fillOutput() {
     // if (inputsNotFilled.value) return
+    error.value = null
     draft.rawFormula = selectedJustification.value.formula
-    draft.formula = substitute(draft.rawFormula, substitution.value)
+    draft.formula = substitute(draft.rawFormula, substitution())
 }
 
 function substitute(
@@ -147,7 +195,7 @@ function substitute(
 }
 
 
-const substitution = computed<Record<string, Formula>>(() => {
+function substitution(): Record<string, Formula> {
     if (!selectedJustification.value) return {}
 
     let subst: Record<string, Formula> | null = {}
@@ -157,7 +205,9 @@ const substitution = computed<Record<string, Formula>>(() => {
 
     for (let i = 0; i < patterns.length; i++) {
         const pattern = patterns[i]
-        const input = inputs[i]?.formula
+        let input = null
+        try { input = (substitutions.value[i] !== '') ? (parseFormula(substitutions.value[i]!)) : inputs[i]?.formula }
+        catch { error.value = t('feedback.errors.newstep.schemavar') }
 
         if (!pattern || !input) continue
 
@@ -166,31 +216,18 @@ const substitution = computed<Record<string, Formula>>(() => {
     }
 
     return subst
-})
-
-
-const selectedJustification = computed(() =>
-    store.availableJustifications.find(j => j.name === draft.justification)!
-)
-
-const requiredInputs = computed(() =>
-    selectedJustification.value?.inputs?.length ?? 0
-)
-
-const inputsNotFilled = computed(() =>
-    selectedJustification.value?.category === 'rule' && (draft.inputs.length < requiredInputs.value || draft.inputs.some(i => i === null))
-)
+}
 
 
 function commit() {
     const selected = selectedJustification.value
     if (!selected) {
-        error.value = 'No justification selected'
+        error.value = t('feedback.errors.newstep.justification')
     }
     if (!inputsNotFilled.value) {
-        error.value = 'Not enough input steps selected'
+        error.value = t('feedback.errors.newstep.few_inputs')
     }
-    const just = toJust(selected!, draft.inputs.map(i => i!.index) as number[])
+    const just = toJust(selected!, draft.inputs.map(i => i?.index) as number[])
 
     const result = store.commitStep(
         draft.formula,
@@ -198,12 +235,14 @@ function commit() {
     )
 
     if (!result.success) {
-        error.value = result.error ?? 'Invalid step.'
+        error.value = result.error?.data ? t(result.error.name, result.error.data) : t('feedback.errors.newstep.invalid')
         return
     }
 
     emit('committed')
 }
+
+
 </script>
 
 <style scoped>
@@ -337,6 +376,8 @@ input[type="checkbox"] {
     border-radius: 8px;
 
     background: white;
+
+    align-content: center;
 }
 
 
@@ -372,6 +413,17 @@ input[type="checkbox"] {
     font-weight: 600;
 
     cursor: pointer;
+}
+
+.input-slot.substitution {
+    /* background: #f4f7ff; */
+    border: none;
+    display: flex;
+    align-content: stretch;
+}
+
+.input-slot input {
+    width: 100%;
 }
 
 

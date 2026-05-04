@@ -1,10 +1,12 @@
 <template>
-  <InitModal v-if="!store.initialized" />
 
-  <div v-else class="app-root">
+  <div class="app-root">
     <TopBar @reset="store.initialized = false" />
-    <MainLayout />
-    <!-- <AppFooter /> -->
+    <div class="content-area">
+      <InitModal v-if="!store.initialized" />
+      <MainLayout v-else />
+      <!-- <AppFooter /> -->
+    </div>
   </div>
 </template>
 
@@ -22,7 +24,14 @@ const store = useProofStore()
 .app-root {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 95vh;
   font-family: Inter, system-ui, sans-serif;
+}
+
+.content-area {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 </style>

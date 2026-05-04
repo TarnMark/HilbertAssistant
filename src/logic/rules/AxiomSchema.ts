@@ -1,11 +1,11 @@
-import type { ProofError } from '../proof/ProofError'
+import { AppError } from '../proof/AppError'
 import { formulaToString, type Atom, type Formula } from '../syntax/Formula'
 import { matchWithBindings } from './InferenceRule'
 
 export interface AxiomSchema {
   name: string
   schema: Formula
-  inputs?: Atom[]
+  premises?: Atom[]
 }
 
 export function axiomToString(axiom: AxiomSchema): string {
@@ -16,19 +16,22 @@ export type SchemaBindings = Record<string, Formula>
 
 export interface AxiomMatchResult {
   success: boolean
-  bindings?: SchemaBindings
-  error?: ProofError
+  bindings: SchemaBindings
+  error?: AppError
 }
 
-export function matchAxiomSchema(schema: Formula, candidate: Formula): AxiomMatchResult {
-  const bindings: SchemaBindings = {}
-
+export function matchAxiomSchema(
+  schema: Formula,
+  candidate: Formula,
+  bindings: SchemaBindings = {},
+): AxiomMatchResult {
   const success = matchWithBindings(schema, candidate, bindings)
 
   if (!success) {
     return {
       success: false,
-      error: { code: 'axiom_mismatch' },
+      bindings: {},
+      error: new AppError('feedback.errors.validation.axiom_mismatch'),
     }
   }
 

@@ -2,11 +2,18 @@
     <div class="top-bar">
         <h2>HilbertAssistant</h2>
 
-        <button class="btn-primary" @click="$emit('reset')">New proof</button>
+        <div class="options">
+            <LanguageSwitcher />
+            <button class="btn-primary" @click="$emit('reset')">{{ t('main.buttons.new_proof') }}</button>
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import LanguageSwitcher from './LanguageSwitcher.vue';
+
+const { t } = useI18n()
 
 defineEmits(['reset'])
 
@@ -18,9 +25,17 @@ defineEmits(['reset'])
     flex-direction: row;
     justify-content: space-between;
     /* justify-content: right; */
-    margin-left: 2rem;
-    margin-right: 2rem;
-    /* border-bottom: 2px red; */
+    padding-left: 2rem;
+    padding-right: 2rem;
+    border-bottom: 1px solid rgba(33, 34, 63, 0.221);
+    margin-bottom: 1rem;
+}
+
+.options {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
 }
 
 .btn-primary {

@@ -3,14 +3,14 @@
         <div class="section-header">
             <h3 class="section-title">{{ title }}</h3>
 
-            <button class="add-btn" @click="creating = true">
+            <button class="add-btn" @click="onCreating">
                 +
             </button>
         </div>
 
         <div class="formula-list">
             <NewJustificationCard v-if="creating" :allowName="have_names" :allowPremises="have_premises"
-                @cancel="creating = false" @create="createFormula" />
+                @cancel="creating = false; store.resetStatus('');" @create="createFormula" />
 
             <div v-for="formula in formulas" :key="formula.name" class="formula-card"
                 @click="$emit('select-justification', formula.name)">
@@ -20,7 +20,7 @@
                     {{ visualFormula(formula) }}
                 </div>
 
-                <button @click.stop="store.removeJustification(formula)" class="delete-btn">
+                <button @click.stop="onDelete(formula)" class="delete-btn">
                     ✕
                 </button>
             </div>
@@ -29,11 +29,12 @@
 </template>
 
 <script setup lang="ts">
-import type { VisualJustification } from '@/helpers';
 import { useProofStore } from '@/stores/proofStore';
 import NewJustificationCard from './NewJustificationCard.vue';
 import { ref } from 'vue';
 import { formulaToString } from '@/logic';
+import { AppError } from '@/logic/proof/AppError';
+import type { VisualJustification } from '@/logic/proof/Justification';
 const props = defineProps<{ title: string, formulas: VisualJustification[], have_names?: boolean, have_premises?: boolean }>()
 
 const store = useProofStore()
@@ -41,11 +42,45 @@ const store = useProofStore()
 const creating = ref(false)
 defineEmits(["select-justification"])
 
+function onCreating() {
+    creating.value = true
+
+    let just: string
+    if (!props.have_names) just = 'assumption'
+    else if (!props.have_premises) just = 'axiom'
+    else just = 'rule'
+
+    store.setStatus({ kind: 'hint', message: 'feedback.hints.newjust.' + just })
+}
+
+function onDelete(formula: VisualJustification) {
+    try {
+        store.removeJustification(formula)
+
+        const name = formula.name
+        store.setStatus({ kind: 'idle', message: 'feedback.hints.newjust.deleted', params: { name } })
+    }
+    catch (error) {
+        if (error instanceof AppError) {
+            store.setStatus({ kind: 'error', error })
+        }
+        else store.setStatus({ kind: 'error', error: new AppError((error as Error).message) })
+    }
+}
+
 function createFormula(justification: VisualJustification) {
     if (!props.have_names) justification.name = 'H' + (props.formulas.length + 1)
-    store.addJustification(justification)
+    try { store.addJustification(justification) }
+    catch (error) {
+        store.setStatus({ kind: 'error', error: (error as AppError) })
+        return
+    }
     creating.value = false
+
+    const name = justification.name
+    store.setStatus({ kind: 'idle', message: 'feedback.hints.newjust.created', params: { name } })
 }
+
 function visualFormula(formula: VisualJustification): string {
     if (formula.category === 'rule')
         return formula.inputs?.map((f) => formulaToString(f)).join(', ') + (formula.inputs?.length ? ' ⊢ ' : '') + formula.formula
@@ -54,16 +89,14 @@ function visualFormula(formula: VisualJustification): string {
 </script>
 
 <style scoped>
-/* outer section (equivalent to mb-6) */
 .formula-section {
     margin-bottom: 1.5rem;
 }
 
-/* section title */
 .section-title {
     font-size: 0.75rem;
     font-weight: 700;
-    color: #a3a3a3;
+    color: #6b7280;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     margin-bottom: 1rem;
@@ -99,7 +132,6 @@ function visualFormula(formula: VisualJustification): string {
     color: #2563eb;
 }
 
-/* container for rows (space-y-3) */
 .formula-list {
     display: flex;
     flex-direction: column;
@@ -122,7 +154,6 @@ function visualFormula(formula: VisualJustification): string {
     transition: all 0.15s ease;
 }
 
-/* slight hover feedback */
 /* .formula-card:hover {
     border-color: #e5e5e5;
     background: #f8f8f8;

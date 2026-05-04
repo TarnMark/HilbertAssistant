@@ -1,0 +1,21 @@
+{
+  "titles": {
+    "title": "Alusta tuletuse konstrueerimine",
+    "ruleset": "Vali reeglistik",
+    "assumptions": "Eeldused",
+    "goal": "Tuletatav valem (Kohustuslik)",
+    "language": "Vali keel"
+  },
+  "buttons": {
+    "add_assumption": "Lisa eeldus",
+    "start": "Alusta tuletus"
+  },
+  "options": {
+    "hilbert": "Hilbert",
+    "extended": "Laiendatud"
+  },
+  "errors": {
+    "init": "Initsialiseerimine ebaõnnestus",
+    "empty": "Sisesta tuletatav valem"
+  }
+}

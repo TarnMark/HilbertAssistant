@@ -1,0 +1,76 @@
+{
+  "errors": {
+    "input": {
+      "end": "Sisendi ootamatu lõpp",
+      "paren": "Puuduv ')' sümbol",
+      "token": "Ootamatu sümbol: { ch }",
+      "trailing": "Ootamatu lisasisend lõpus"
+    },
+    "newstep": {
+      "schemavar": "Vigane sisend skeemimuutujas",
+      "justification": "Põhjendus pole valitud",
+      "few_inputs": "Valitud on liiga vähe sisendsamme",
+      "invalid": "Vigane samm",
+      "not_initialized": "Seanss ei ole veel algatatud",
+      "rejected": "Samm lükati tagasi"
+    },
+    "validation": {
+      "unknown_justification": "Tundmatu põhjenduse tüüp",
+      "unknown_rule": "Tundmatu reegel: {name}",
+      "unknown_assumption": "Tundmatu eeldus: {name}",
+      "unknown_axiom": "Tundmatu aksioomiskeem: {name}",
+      "unknown_formula": "Tundmatu valemi tüüp",
+
+      "axiom_mismatch": "Aksioom ei sobitu",
+      "assumption_mismatch": "Eeldus ei sobitu",
+      "rule_mismatch": "Reegel ei sobitu",
+
+      "unbound": "Sidumata skeemimuutuja: {name}"
+    },
+    "registries": {
+      "axiom_exists": "Aksioom on juba olemas: {name}",
+      "axiom_not_found": "Sellist aksioomi ei leitud: {name}",
+
+      "assumption_exists": "Eeldus on juba olemas: {name}",
+      "assumption_not_found": "Sellist eeldust ei leitud: {name}",
+
+      "rule_exists": "Reegel on juba olemas: {name}",
+      "rule_not_found": "Sellist reeglit ei leitud: {name}",
+
+      "empty": "Tühi põhjenduse valem",
+      "noname": "Põhjenduse nimi puudub"
+    }
+  },
+  "hints": {
+    "feedback": {
+      "good": {
+        "default": "See samm parandab tulevasi võimalusi. Eesmärk on saavutatav { score } sammuga.",
+        "goal": "See samm võimaldab eesmärki saavutada. Eesmärk on saavutatav { score } sammuga.",
+        "no_goal": "See samm parandab tulevasi võimalusi."
+      },
+      "neutral": {
+        "default": "See samm ei muuda tuletust oluliselt. Eesmärk on saavutatav { score } sammuga.",
+        "no_goal": "See samm ei muuda tuletust oluliselt."
+      },
+      "bad": "See samm vähendab tulevasi võimalusi või muudab tõestuse keerulisemaks."
+    },
+    "idle": "Tee samm või lisa põhjendus, et saada tagasisidet.",
+    "analyzing": "Viimast sammu analüüsitakse...",
+    "achieved": "✓ Eesmärk saavutatud",
+
+    "newstep": {
+      "creating": "Vali uue sammu põhjendus.",
+      "assumption": "Täida eeldusvalem ja kinnita.",
+      "axiom": "Vali sisendsammud tõestusest, täida skeemimuutujad või kirjuta valem käsitsi ja kinnita.",
+      "rule": "Vali sisendsammud tõestusest ja kinnita."
+    },
+
+    "newjust": {
+      "assumption": "Sisesta eelduse valem ja kinnita.",
+      "axiom": "Sisesta aksioomiskeemi nimi ja valem ning kinnita.",
+      "rule": "Sisesta reegli nimi, sisendid (kui on) ja väljundvalem ning kinnita.",
+      "created": "Uus põhjendus loodud: {name}.",
+      "deleted": "Põhjendus kustutatud: {name}."
+    }
+  }
+}

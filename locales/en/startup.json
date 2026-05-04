@@ -1,0 +1,21 @@
+{
+  "titles": {
+    "title": "Start New Proof Construction",
+    "ruleset": "Choose Ruleset",
+    "assumptions": "Assumptions",
+    "goal": "Goal (Required)",
+    "language": "Language"
+  },
+  "buttons": {
+    "add_assumption": "Add Assumption",
+    "start": "Start Proof"
+  },
+  "options": {
+    "hilbert": "Hilbert",
+    "extended": "Extended"
+  },
+  "errors": {
+    "init": "Initialization failed",
+    "empty": "Goal is required"
+  }
+}
