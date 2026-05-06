@@ -55,7 +55,10 @@
       "bad": "This step reduces future possibilities or makes the proof more complicated."
     },
     "idle": "Make a step or add a justification to receive feedback.",
-    "analyzing": "Analyzing latest step...",
+    "analyzing": {
+      "step": "Analyzing latest step...",
+      "state": "Analyzing state..."
+    },
     "achieved": "✓ Goal achieved",
 
     "newstep": {

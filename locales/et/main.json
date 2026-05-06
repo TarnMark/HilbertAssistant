@@ -41,7 +41,11 @@
       }
     },
     "input": {
-      "placeholder": "Sisesta valem"
+      "placeholder": "Sisesta valem",
+      "hint_title": "Süntaks:",
+      "hint_imp": "Implikatsioon: A > B või A → B",
+      "hint_neg": "Eitus: -A või ¬A",
+      "hint_paren": "Grupeerimine: ( ... )"
     }
   }
 }

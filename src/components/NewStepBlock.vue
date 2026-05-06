@@ -19,9 +19,9 @@
                 </select>
             </div>
 
-            <div v-if="requiredInputs > 0" class="field">
+            <div v-if="requiredInputs > 0 && selectedJustification.category === 'rule'" class="field">
                 <label>{{ t('main.components.newstep.titles.steps') }}</label>
-                <div v-if="selectedJustification.category === 'rule'" class="rule-info">
+                <div class="rule-info">
                     {{draftStep.inputs.filter(i => i !== null).length}} / {{ requiredInputs }} {{
                         t('main.components.newstep.titles.inputs') }}
                 </div>
@@ -179,10 +179,10 @@ function substitute(
 
         if (/[A-Z]/.test(ch)) {
             if (subst[ch]) {
-                result += `(${formulaToString(subst[ch])})`
+                result += `${formulaToString(subst[ch], true)}`
             }
             else if (subst['?' + ch]) {
-                result += `(${formulaToString(subst['?' + ch]!)})`
+                result += `${formulaToString(subst['?' + ch]!, true)}`
             } else {
                 result += ch
             }

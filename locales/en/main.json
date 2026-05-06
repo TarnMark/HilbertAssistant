@@ -41,7 +41,11 @@
       }
     },
     "input": {
-      "placeholder": "Enter formula"
+      "placeholder": "Enter formula",
+      "hint_title": "Syntax:",
+      "hint_imp": "Implication: A > B or A → B",
+      "hint_neg": "Negation: -A or ¬A",
+      "hint_paren": "Grouping: ( ... )"
     }
   }
 }

@@ -1,16 +1,15 @@
 import { parseFormula } from '@/logic'
-import { analyze } from '@/logic/feedback/StepAnalyzer'
 import { deserializeState } from './WorkerClient'
+import { analyze, analyzeMaxProgress } from '@/logic/feedback/StepAnalyzer'
 
 self.onmessage = (event) => {
-  const { current, previous, goal } = event.data
+  const { state, goal } = event.data
 
   try {
-    const previousState = deserializeState(previous)
-    const currentState = deserializeState(current)
+    const activeState = deserializeState(state)
     const goalFormula = parseFormula(goal)
 
-    const result = analyze(previousState, currentState, goalFormula)
+    const result = analyzeMaxProgress(activeState, goalFormula)
 
     self.postMessage({
       ok: true,

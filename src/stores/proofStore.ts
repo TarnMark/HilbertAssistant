@@ -1,22 +1,21 @@
 import { defineStore } from 'pinia'
-import { computed, reactive, ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import { addStep } from '@/logic/proof/ProofEngine'
 
+import { emptyProofState, type ProofState } from '@/logic'
+import { analyzeMaxProgress, type StepFeedback } from '@/logic/feedback/StepAnalyzer'
+import { AppError } from '@/logic/proof/AppError'
+import type { Justification, VisualJustification } from '@/logic/proof/Justification'
 import {
   atom,
   formulaEquals,
   formulaToString,
   imp,
-  makeSchemaVariables,
   parseFormula,
   type Formula,
 } from '@/logic/syntax/Formula'
-import { emptyProofState, type ProofState } from '@/logic'
-import { analyzeMaxProgress, type StepFeedback } from '@/logic/feedback/StepAnalyzer'
-import { serializeState } from '@/workers/analyze.worker'
-import { AppError } from '@/logic/proof/AppError'
-import type { Justification, VisualJustification } from '@/logic/proof/Justification'
+import { analyzeStepAsync, computeProgressAsync } from '@/workers/WorkerClient'
 
 export const useProofStore = defineStore('proof', () => {
   const state = ref<ProofState>(emptyProofState())
@@ -152,43 +151,31 @@ export const useProofStore = defineStore('proof', () => {
     stepFeedback.value[states] = null
     if (states < 2) return { kind: 'invalid', reason: { code: 'steps_missing' } }
 
-    status.value = { kind: 'analyzing' }
+    status.value = { kind: 'analyzing', message: 'feedback.hints.analyzing.step' }
 
-    const worker = getWorker()
+    try {
+      const result = await analyzeStepAsync(
+        stateHistory.value[states - 1]!,
+        stateHistory.value[states - 2]!,
+        formulaToString(goal.value),
+      )
+      stepFeedback.value[states] = result
+      progress.value = 1 - Math.max(0, Math.min(maxScore.value, result.score)) / maxScore.value
 
-    return new Promise((resolve) => {
-      worker.onmessage = (e) => {
-        status.value = { kind: 'idle' }
-
-        const { ok, result, error } = e.data
-
-        if (!ok) {
-          status.value = { kind: 'error', message: error }
-          console.log(error)
-          return
-        }
-
-        stepFeedback.value[states] = result
-        progress.value = 1 - Math.max(0, Math.min(maxScore.value, result.score)) / maxScore.value
-
-        const score = feedback.value?.score.toString()
-        status.value = { kind: 'hint', message: feedback.value?.message, params: { score } }
-
-        resolve(result)
-      }
-      worker.postMessage({
-        current: serializeState(stateHistory.value[states - 1]!),
-        previous: serializeState(stateHistory.value[states - 2]!),
-        goal: formulaToString(goal.value),
-      })
-    })
+      const score = feedback.value?.score.toString()
+      status.value = { kind: 'hint', message: feedback.value?.message, params: { score } }
+    } catch (e) {
+      status.value = { kind: 'error', message: (e as Error).message }
+    }
   }
 
   function undoStep() {
-    if (stateHistory.value.length > 1) {
+    const states = stateHistory.value.length
+    if (states > 1) {
       stateHistory.value.pop()!
-      state.value = stateHistory.value[stateHistory.value.length - 1]!
+      state.value = stateHistory.value[states - 2]!
       resetStatus('')
+      stepFeedback.value[states - 1] = null
     }
   }
 
@@ -236,16 +223,6 @@ export const useProofStore = defineStore('proof', () => {
     // }
   }
 
-  let worker: Worker | null = null
-  function getWorker() {
-    if (!worker) {
-      worker = new Worker(new URL('../workers/analyze.worker.ts', import.meta.url), {
-        type: 'module',
-      })
-    }
-    return worker
-  }
-
   type ProofStatus = {
     kind: 'idle' | 'analyzing' | 'error' | 'hint' | 'goal'
     message?: string
@@ -254,22 +231,39 @@ export const useProofStore = defineStore('proof', () => {
   }
 
   const status = ref<ProofStatus>({ kind: 'idle' })
+  let queued: { msg?: string; params?: Record<string, unknown> } | undefined
 
   function setStatus(newStatus: ProofStatus) {
-    if (status.value.kind === 'analyzing') return
+    if (status.value.kind === 'analyzing') {
+      queued = { msg: newStatus.message, params: newStatus.params }
+      return
+    }
     status.value = {
       kind: newStatus.kind,
-      message: newStatus.message ?? status.value.message,
+      message: newStatus.message ?? queued?.msg ?? status.value.message,
       error: newStatus.error ?? undefined,
-      params: newStatus.params ?? undefined,
+      params: newStatus.params ?? queued?.params ?? undefined,
     }
+    if (status.value.message === queued?.msg) queued = undefined
   }
+
+  function prevStatus() {}
+
   function resetStatus(message?: string) {
+    if (status.value.kind === 'analyzing') return
     status.value = { kind: 'idle', message: message ?? status.value.message }
   }
 
-  function recalculateMaxProgress() {
-    maxScore.value = analyzeMaxProgress(state.value, goal.value)
+  async function recalculateMaxProgress() {
+    try {
+      status.value = { kind: 'analyzing', message: 'feedback.hints.analyzing.state' }
+
+      maxScore.value = await computeProgressAsync(state.value, formulaToString(goal.value))
+
+      status.value = { kind: 'idle', message: queued?.msg, params: queued?.params }
+    } catch (e) {
+      status.value = { kind: 'error', message: (e as Error).message }
+    }
   }
 
   return {

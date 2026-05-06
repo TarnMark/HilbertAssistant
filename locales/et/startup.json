@@ -1,6 +1,6 @@
 {
   "titles": {
-    "title": "Alusta tuletuse konstrueerimine",
+    "title": "Tuletuse konstrueerimine",
     "ruleset": "Vali reeglistik",
     "assumptions": "Eeldused",
     "goal": "Tuletatav valem (Kohustuslik)",
@@ -8,7 +8,7 @@
   },
   "buttons": {
     "add_assumption": "Lisa eeldus",
-    "start": "Alusta tuletus"
+    "start": "Alusta tuletust"
   },
   "options": {
     "hilbert": "Hilbert",

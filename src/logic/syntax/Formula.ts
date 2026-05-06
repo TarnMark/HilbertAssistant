@@ -2,7 +2,9 @@ import { AppError } from '../proof/AppError'
 
 export type Formula = Atom | Implication | Negation //| UniversalQuantifier | ExistentialQuantifier
 
-export function formulaToString(f: Formula): string {
+export function formulaToString(f: Formula, wrap = false): string {
+  if (wrap) return wrapIfNeeded(f)
+
   switch (f.kind) {
     case 'atom':
       return f.name.replace('?', '')

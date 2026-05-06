@@ -55,7 +55,10 @@
       "bad": "See samm vähendab tulevasi võimalusi või muudab tõestuse keerulisemaks."
     },
     "idle": "Tee samm või lisa põhjendus, et saada tagasisidet.",
-    "analyzing": "Viimast sammu analüüsitakse...",
+    "analyzing": {
+      "step": "Viimast sammu analüüsitakse...",
+      "state": "Seisu analüüsitakse..."
+    },
     "achieved": "✓ Eesmärk saavutatud",
 
     "newstep": {

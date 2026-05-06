@@ -41,7 +41,7 @@
 
             <div v-if="store.status.kind === 'analyzing'" class="feedback-loading">
                 <span class="spinner"></span>
-                <span>{{ t('feedback.hints.analyzing') }}</span>
+                <span>{{ statusMessage }}</span>
             </div>
 
             <div v-else-if="statusMessage" class="feedback-message">
@@ -76,7 +76,7 @@ const store = useProofStore()
 const { t } = useI18n()
 
 const progressWidth = computed(() => {
-    // if (store.analyzing) return "100%"
+    if (store.goalAchieved) return "100%"
 
     if (!store.feedback && store.status.kind !== 'analyzing') return "0%"
 

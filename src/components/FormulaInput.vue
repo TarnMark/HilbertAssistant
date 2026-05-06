@@ -1,22 +1,29 @@
 <template>
-    <!-- <div class="formula-editor"> -->
+    <div class="formula-field">
 
-    <!-- <pre class="highlight" v-html="highlighted"></pre> -->
+        <input class="formula-input" ref="inputEl" :autofocus="true" :value="modelValue" @input="formatFormulaInput"
+            :placeholder="placeholder ?? t('main.components.input.placeholder')" />
 
-    <input class="formula-input" ref="inputEl" :autofocus="true" :value="modelValue" @input="formatFormulaInput"
-        :placeholder="t('main.components.input.placeholder')" />
+        <HintTooltip class="formula-hint">
+            <div>{{ t('main.components.input.hint_title') }}</div>
+            <div>• {{ t('main.components.input.hint_imp') }}</div>
+            <div>• {{ t('main.components.input.hint_neg') }}</div>
+            <div>• {{ t('main.components.input.hint_paren') }}</div>
+        </HintTooltip>
 
-    <!-- </div> -->
+    </div>
 </template>
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
+import HintTooltip from './HintTooltip.vue';
 
 
 const { t } = useI18n()
 
 defineProps<{
-    modelValue: string
+    modelValue: string,
+    placeholder?: string
 }>()
 
 const emit = defineEmits<{
@@ -35,41 +42,25 @@ function formatFormulaInput(event: Event) {
     emit("update:modelValue", value)
 }
 
-
-// watch(() => 
-//     focus()
-// })
-
-
-// const highlighted = computed(() => {
-//     const text = props.modelValue
-
-//     if (!text) return ""
-
-//     return text
-//         .replace(/>/g, `<span class="op">→</span>`)
-//         .replace(/∧|&/g, `<span class="op">∧</span>`)
-//         .replace(/∨|\|/g, `<span class="op">∨</span>`)
-//         .replace(/-|!/g, `<span class="op">¬</span>`)
-//         .replace(/\(/g, `<span class="paren">(</span>`)
-//         .replace(/\)/g, `<span class="paren">)</span>`)
-// })
 </script>
 
 <style scoped>
-/* .formula-editor {
-    /* width: 100%; */
-/* } */
+.formula-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
 
 .formula-input {
-    /* width: 100%; */
+    width: 100%;
     display: flex;
     /* width: auto; */
 
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 2rem 0.5rem 0.75rem;
 
     border-radius: 0.5rem;
-    border: 1px solid #e5e5e5;
+    border: 1.5px solid #e5e5e5a8;
     outline: none;
 
     background: white;
@@ -81,60 +72,26 @@ function formatFormulaInput(event: Event) {
 }
 
 .formula-input:focus {
-    border-color: #4f46e5;
+    border: 1.5px solid #4e46e5aa;
 
-    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+    /* box-shadow: 0 0 0 2px rgba(34, 30, 126, 0.233); */
 }
 
-
-/* highlighted background layer */
-
-.highlight {
-    margin: 0;
-
-    padding: 0.55rem 0.75rem;
-
-    pointer-events: none;
-
-    white-space: pre-wrap;
-    word-break: break-word;
+.formula-input::placeholder {
+    color: #9aa1ad;
+    opacity: 1;
 }
 
+.formula-input:focus::placeholder {
+    opacity: 0;
+}
 
-/* typing layer */
-
-/* .editor {
+.formula-hint {
     position: absolute;
-    inset: 0;
+    right: 0.5rem;
 
-    width: 100%;
-    height: 100%;
-
-    padding: 0.55rem 0.75rem;
-
-    border: none;
-    outline: none;
-
-    background: transparent;
-
-    color: transparent;
-    caret-color: black;
-
-    resize: none;
-
-    font-family: inherit;
-    font-size: inherit;
-} */
-
-
-/* syntax colors */
-
-.op {
-    color: #1b66d8;
-    font-weight: 600;
-}
-
-.paren {
-    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 </style>
