@@ -1,6 +1,5 @@
-import { parseFormula } from '@/logic'
-import { deserializeState } from './WorkerClient'
-import { analyze, analyzeMaxProgress } from '@/logic/feedback/StepAnalyzer'
+import { deserializeState, parseFormula } from '@/logic'
+import { analyzeMaxProgress } from '@/logic/feedback/StepAnalyzer'
 
 self.onmessage = (event) => {
   const { state, goal } = event.data

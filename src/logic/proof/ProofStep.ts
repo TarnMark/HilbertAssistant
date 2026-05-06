@@ -6,3 +6,9 @@ export interface ProofStep {
   formula: Formula
   justification: Justification
 }
+
+export type SerializedStep = {
+  index: number
+  formula: string
+  justification: string
+}

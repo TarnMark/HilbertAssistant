@@ -7,6 +7,11 @@ export type Assumption = {
   formula: Formula
 }
 
+export type SerializedAssumption = {
+  name: string
+  formula: string
+}
+
 export class AssumptionRegistry extends FormulaRegistry<Assumption> {
   formulas = new Map<string, Assumption>()
 

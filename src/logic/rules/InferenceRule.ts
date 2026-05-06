@@ -49,3 +49,9 @@ export function matchWithBindings(
       return matchWithBindings(pattern.right, candidate.right, bindings)
   }
 }
+
+export type SerializedRule = {
+  name: string
+  premises: string[]
+  conclusion: string
+}

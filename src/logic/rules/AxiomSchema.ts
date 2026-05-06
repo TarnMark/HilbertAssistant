@@ -40,3 +40,8 @@ export function matchAxiomSchema(
     bindings,
   }
 }
+
+export type SerializedAxiom = {
+  name: string
+  schema: string
+}
