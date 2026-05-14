@@ -12,7 +12,8 @@
   "buttons": {
     "new_proof": "Uus tuletus",
     "add_step": "Lisa samm",
-    "undo_step": "Samm tagasi"
+    "undo_step": "Samm tagasi",
+    "toggle_feedback": "Sammude analüüs"
   },
   "components": {
     "newstep": {

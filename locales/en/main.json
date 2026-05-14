@@ -12,7 +12,8 @@
   "buttons": {
     "new_proof": "New Proof",
     "add_step": "Add Step",
-    "undo_step": "Undo Step"
+    "undo_step": "Undo Step",
+    "toggle_feedback": "Step Feedback"
   },
   "components": {
     "newstep": {

@@ -27,7 +27,7 @@ describe('Modus Ponens', () => {
     const step2: ProofStep = {
       index: 2,
       formula: B,
-      justification: { kind: 'rule', ruleName: 'MP', from: [0, 1] },
+      justification: { kind: 'rule', name: 'MP', from: [0, 1] },
     }
 
     const state = emptyProofState([step0, step1])
@@ -53,7 +53,7 @@ describe('Modus Ponens', () => {
     const step2: ProofStep = {
       index: 2,
       formula: B,
-      justification: { kind: 'rule', ruleName: 'MP', from: [0, 1] },
+      justification: { kind: 'rule', name: 'MP', from: [0, 1] },
     }
 
     const state = emptyProofState([step0, step1])
@@ -73,7 +73,7 @@ describe('Modus Ponens', () => {
     const step1: ProofStep = {
       index: 1,
       formula: B,
-      justification: { kind: 'rule', ruleName: 'MP', from: [0, 2] },
+      justification: { kind: 'rule', name: 'MP', from: [0, 2] },
     }
 
     const state = emptyProofState([step0])
@@ -99,7 +99,7 @@ describe('Modus Ponens', () => {
     const step2: ProofStep = {
       index: 2,
       formula: B,
-      justification: { kind: 'rule', ruleName: 'MP', from: [0, 1] },
+      justification: { kind: 'rule', name: 'MP', from: [0, 1] },
     }
 
     const state = emptyProofState([step0, step1])
@@ -128,7 +128,7 @@ describe('Modus Ponens', () => {
     const step2: ProofStep = {
       index: 2,
       formula: C,
-      justification: { kind: 'rule', ruleName: 'MP', from: [0, 1] },
+      justification: { kind: 'rule', name: 'MP', from: [0, 1] },
     }
 
     const state = emptyProofState([step0, step1])
@@ -154,7 +154,7 @@ describe('Modus Ponens', () => {
     const step2: ProofStep = {
       index: 2,
       formula: B,
-      justification: { kind: 'rule', ruleName: 'MP', from: [0, 1] },
+      justification: { kind: 'rule', name: 'MP', from: [0, 1] },
     }
 
     const state = emptyProofState([step0, step1])

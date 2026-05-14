@@ -13,24 +13,12 @@
             </div>
         </section>
 
-        <div class="card">
+        <div class="card" v-if="store.giveFeedback">
             <div class="title">{{ t('main.titles.progress') }}</div>
             <div class="progress-bar">
                 <div class="fill" :style="{ width: progressWidth }"
                     :class="{ loading: store.status.kind === 'analyzing' }"></div>
             </div>
-
-            <!-- <div class="status-text">
-                <span v-if="store.analyzing">
-                    Analyzing step...
-                </span>
-                <span v-else-if="store.feedback">
-                    {{ store.feedback.message }}
-                </span>
-                <span v-else>
-                    Make a step to receive feedback
-                </span>
-            </div> -->
         </div>
 
 

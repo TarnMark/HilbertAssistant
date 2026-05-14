@@ -15,7 +15,7 @@ describe('ProofEngine - addStep', () => {
   it('adds valid axiom step', () => {
     const state = emptyProofState()
 
-    const result = addStep(state, imp(A, imp(B, A)), { kind: 'axiom', schemaName: 'A1' })
+    const result = addStep(state, imp(A, imp(B, A)), { kind: 'axiom', name: 'A1' })
 
     expect(result.success).toBe(true)
     expect(result.state?.steps.length).toBe(1)
@@ -24,7 +24,7 @@ describe('ProofEngine - addStep', () => {
   it('rejects invalid axiom step', () => {
     const state = emptyProofState()
 
-    const result = addStep(state, imp(A, imp(B, B)), { kind: 'axiom', schemaName: 'A1' })
+    const result = addStep(state, imp(A, imp(B, B)), { kind: 'axiom', name: 'A1' })
 
     expect(result.success).toBe(false)
     expect(result.state).toBeUndefined()
@@ -61,7 +61,7 @@ describe('ProofEngine - addStep', () => {
 
     const state2 = r2.state!
 
-    const r3 = addStep(state2, B, { kind: 'rule', ruleName: 'MP', from: [0, 1] })
+    const r3 = addStep(state2, B, { kind: 'rule', name: 'MP', from: [0, 1] })
 
     expect(r3.success).toBe(true)
     expect(r3.state?.steps.length).toBe(3)
@@ -70,18 +70,18 @@ describe('ProofEngine - addStep', () => {
   it('adds more complicated  MP step', () => {
     const state0 = emptyProofState()
 
-    const r1 = addStep(state0, parseFormula('A>(B>A)'), { kind: 'axiom', schemaName: 'A1' })
+    const r1 = addStep(state0, parseFormula('A>(B>A)'), { kind: 'axiom', name: 'A1' })
 
     const state1 = r1.state!
 
     const r2 = addStep(state1, parseFormula('(A>(B>A))>((A>B)>(A>A))'), {
       kind: 'axiom',
-      schemaName: 'A2',
+      name: 'A2',
     })
 
     const state2 = r2.state!
 
-    const r3 = addStep(state2, imp(AB, imp(A, A)), { kind: 'rule', ruleName: 'MP', from: [0, 1] })
+    const r3 = addStep(state2, imp(AB, imp(A, A)), { kind: 'rule', name: 'MP', from: [0, 1] })
 
     expect(r3.success).toBe(true)
     expect(r3.state?.steps.length).toBe(3)
@@ -101,7 +101,7 @@ describe('ProofEngine - addStep', () => {
     const r3 = addStep(
       state2,
       A, // wrong conclusion
-      { kind: 'rule', ruleName: 'MP', from: [0, 1] },
+      { kind: 'rule', name: 'MP', from: [0, 1] },
     )
 
     expect(r3.success).toBe(false)
@@ -111,7 +111,7 @@ describe('ProofEngine - addStep', () => {
   it('accepts rule with no inputs', () => {
     const state0 = emptyProofState(undefined, undefined, true)
 
-    const r1 = addStep(state0, imp(A, not(not(A))), { kind: 'rule', ruleName: '→¬¬', from: [] })
+    const r1 = addStep(state0, imp(A, not(not(A))), { kind: 'rule', name: '→¬¬', from: [] })
 
     expect(r1.success).toBe(true)
   })
@@ -129,7 +129,7 @@ describe('ProofEngine - addStep', () => {
 
     const state1 = r1.state!
 
-    const r2 = addStep(state1, imp(A, A), { kind: 'rule', ruleName: 'Test', from: [0] })
+    const r2 = addStep(state1, imp(A, A), { kind: 'rule', name: 'Test', from: [0] })
 
     expect(r2.success).toBe(true)
   })
@@ -143,7 +143,7 @@ describe('ProofEngine - addStep', () => {
       conclusion: imp(atom('?B'), atom('?B')),
     })
 
-    const r1 = addStep(state0, imp(A, A), { kind: 'rule', ruleName: 'Test', from: [] })
+    const r1 = addStep(state0, imp(A, A), { kind: 'rule', name: 'Test', from: [] })
 
     expect(r1.success).toBe(true)
   })

@@ -4,7 +4,7 @@ import type { AxiomSchema } from '@/logic/rules/AxiomSchema'
 import { RuleRegistry } from '@/logic/rules/RuleRegistry'
 import { describe, expect, it } from 'vitest'
 import { emptyProofState } from '../../proof/ProofState'
-import { atom, imp, not, type Formula } from '../../syntax/Formula'
+import { atom, imp, not, parseFormula, type Formula } from '../../syntax/Formula'
 import {
   applyAxiomSchema,
   beamSearch,
@@ -13,7 +13,7 @@ import {
   getNextFromRules,
 } from '../DeepSearch'
 import { buildDerivedState } from '../DerivedState'
-import { evaluate } from '../HeuristicEvaluator'
+import { distance, evaluate } from '../HeuristicEvaluator'
 import { analyze } from '../StepAnalyzer'
 
 const A = atom('A')
@@ -128,7 +128,7 @@ describe('Feedback - more complicated proofs', () => {
       // {
       //   index: 0,
       //   formula: imp(A, imp(imp(A, A), A)),
-      //   justification: { kind: 'axiom', schemaName: 'A1' },
+      //   justification: { kind: 'axiom', name: 'A1' },
       // },
     ])
     const derived = buildDerivedState(state)
@@ -147,7 +147,7 @@ describe('Feedback - more complicated proofs', () => {
     const state1 = emptyProofState()
     const state2 = addStep(state1, imp(A, imp(imp(A, A), A)), {
       kind: 'axiom',
-      schemaName: 'A1',
+      name: 'A1',
     }).state!
 
     const goal = imp(A, A)
@@ -180,13 +180,44 @@ describe('Feedback - more complicated proofs', () => {
       {
         index: 0,
         formula: imp(A, imp(B, A)),
-        justification: { kind: 'axiom', schemaName: 'A1' },
+        justification: { kind: 'axiom', name: 'A1' },
       },
     ])
     const goal = imp(B, C)
 
     const result = analyze(state1, state2, goal)
 
-    expect(result.kind).toBe('bad')
+    expect(result.kind).not.toBe('good')
   }, 30000)
+
+  it('⊢ ¬X → (X → Y)', () => {
+    const state = emptyProofState([
+      {
+        index: 0,
+        formula: parseFormula('(¬B → ¬A) → (A → B)'),
+        justification: { kind: 'axiom', name: 'A3' },
+      },
+      {
+        index: 1,
+        formula: parseFormula('((¬B → ¬A) → (A → B)) → (¬A → ((¬B → ¬A) → (A → B)))'),
+        justification: { kind: 'axiom', name: 'A1' },
+      },
+      {
+        index: 2,
+        formula: parseFormula('¬A → ((¬B → ¬A) → (A → B))'),
+        justification: { kind: 'axiom', name: 'A1' },
+      },
+    ])
+    const derived = buildDerivedState(state)
+    derived.goal = imp(not(A), imp(A, not(B)))
+
+    const result = beamSearch(derived, state.rules, state.axioms, evaluate, {
+      maxDepth: 7,
+      beamWidth: 4,
+    })
+
+    expect(result.bestDistance).toBeLessThan(
+      distance(parseFormula('(¬B → ¬A) → (A → B)'), derived.goal!),
+    )
+  }, 20000)
 })

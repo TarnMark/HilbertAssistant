@@ -1,5 +1,5 @@
 import type { ProofState } from '../proof/ProofState'
-import type { Formula } from '../syntax/Formula'
+import { type Formula } from '../syntax/Formula'
 import { beamSearch } from './DeepSearch'
 import { buildDerivedState, type DerivedState } from './DerivedState'
 import { evaluate } from './HeuristicEvaluator'
@@ -11,13 +11,13 @@ export type StepFeedback = {
 }
 
 const options = {
-  maxDepth: 8,
-  beamWidth: 4,
+  maxDepth: 5,
+  beamWidth: 3,
 }
 
 const buffer = 0
 
-let score = 0
+let score = 100
 
 const GOOD: (msg?: string) => StepFeedback = (msg?: string) => {
   return { kind: 'good', message: msg ?? 'feedback.hints.feedback.good.default', score }
@@ -40,9 +40,12 @@ export function analyze(
   heuristicEval: (s: DerivedState) => number = evaluate,
 ): StepFeedback {
   const prevDerived = buildDerivedState(prevState)
-  prevDerived.goal = goal
   const nextDerived = buildDerivedState(nextState)
+  prevDerived.goal = goal
   nextDerived.goal = goal
+
+  if (prevDerived.formulas.size === nextDerived.formulas.size)
+    return NEUTRAL('feedback.hints.feedback.neutral.no_goal')
 
   const rules = prevState.rules
   const axioms = prevState.axioms
@@ -51,9 +54,6 @@ export function analyze(
   const nextSearch = beamSearch(nextDerived, rules, axioms, heuristicEval, options)
 
   score = nextSearch.foundGoal ? nextSearch.minDepthToGoal! : nextSearch.bestDistance
-  // console.log('Prev: ' + prevSearch.minDepthToGoal)
-  // console.log('Next: ' + nextSearch.minDepthToGoal)
-  // console.log('Prev: ' + prevSearch.bestDistance + ', next: ' + nextSearch.bestDistance)
 
   // both states have reached the goal
   if (prevSearch.minDepthToGoal !== null && nextSearch.minDepthToGoal !== null) {

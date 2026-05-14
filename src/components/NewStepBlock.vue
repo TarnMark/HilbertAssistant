@@ -135,6 +135,8 @@ watch(
         draft.inputs = []
         draft.formula = ''
         substitutions.value = defaultSubs.value
+        if (draft.justification !== null && draft.justification !== '')
+            store.setStatus({ kind: 'hint', message: 'feedback.hints.newstep.' + (selectedJustification.value.category ?? 'creating') })
         fillOutput()
     }
 )

@@ -15,7 +15,7 @@ describe('ProofValidator', () => {
       index: 0,
       formula: imp(A, imp(B, A)),
       // formula: parseFormula('A > (B > A)'),
-      justification: { kind: 'axiom', schemaName: 'A1' },
+      justification: { kind: 'axiom', name: 'A1' },
     }
 
     const state = emptyProofState()
@@ -29,7 +29,7 @@ describe('ProofValidator', () => {
     const step: ProofStep = {
       index: 0,
       formula: imp(A, imp(B, B)), // wrong final atom
-      justification: { kind: 'axiom', schemaName: 'A1' },
+      justification: { kind: 'axiom', name: 'A1' },
     }
 
     const state = emptyProofState()

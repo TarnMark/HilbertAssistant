@@ -1,8 +1,8 @@
 import type { Formula } from '../syntax/Formula'
 
 export type Justification =
-  | { kind: 'axiom'; schemaName: string }
-  | { kind: 'rule'; ruleName: string; from: number[] }
+  | { kind: 'axiom'; name: string }
+  | { kind: 'rule'; name: string; from: number[] }
   | { kind: 'assumption'; name: string }
 
 export function formatJustification(j: Justification): string {
@@ -10,9 +10,9 @@ export function formatJustification(j: Justification): string {
     case 'assumption':
       return j.name
     case 'axiom':
-      return `Axiom ${j.schemaName}`
+      return `Axiom ${j.name}`
     case 'rule':
-      return `${j.ruleName} ${j.from.map((n) => n + 1).join(', ')}`
+      return `${j.name} ${j.from.map((n) => n + 1).join(', ')}`
   }
 }
 
@@ -30,12 +30,12 @@ export function toJust(visual: VisualJustification, from?: number[]): Justificat
     case 'axiom':
       return {
         kind: 'axiom',
-        schemaName: visual.name,
+        name: visual.name,
       }
     case 'rule':
       return {
         kind: 'rule',
-        ruleName: visual.name,
+        name: visual.name,
         from: from ?? [],
       }
   }
@@ -47,7 +47,7 @@ export function parseJustification(s: string): Justification {
   if (s.startsWith('Axiom ')) {
     return {
       kind: 'axiom',
-      schemaName: s.slice(6).trim(),
+      name: s.slice(6).trim(),
     }
   }
 
@@ -58,7 +58,7 @@ export function parseJustification(s: string): Justification {
 
     return {
       kind: 'rule',
-      ruleName: name!.trim(),
+      name: name!.trim(),
       from: nums!.split(',').map((n) => parseInt(n.trim()) - 1),
     }
   }

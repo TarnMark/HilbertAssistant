@@ -1,6 +1,13 @@
 import { serializeState, type ProofState } from '@/logic'
 import type { StepFeedback } from '@/logic/feedback/StepAnalyzer'
 
+// general
+
+export function stopWorkers() {
+  workerAnalyze?.terminate()
+  workerProgress?.terminate()
+}
+
 // step analysis worker
 
 let workerAnalyze: Worker | null = null

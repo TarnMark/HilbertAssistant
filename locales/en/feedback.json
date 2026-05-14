@@ -38,7 +38,9 @@
       "rule_not_found": "No such rule found: {name}.",
 
       "empty": "Empty justification formula.",
-      "noname": "Empty justification name."
+      "noname": "Empty justification name.",
+
+      "justification_in_use": "Unable to delete {name} since it is used in the proof."
     }
   },
   "hints": {
@@ -52,7 +54,8 @@
         "default": "This step does not change future potential. Goal can be achieved in { score } steps.",
         "no_goal": "This step does not change future potential."
       },
-      "bad": "This step reduces future possibilities or makes the proof more complicated."
+      "bad": "This step reduces future possibilities or makes the proof more complicated.",
+      "disabled": "Step added to the proof."
     },
     "idle": "Make a step or add a justification to receive feedback.",
     "analyzing": {
@@ -64,8 +67,8 @@
     "newstep": {
       "creating": "Choose the justification for the new step.",
       "assumption": "Fill the assumption formula and confirm.",
-      "axiom": "Select the input steps from the proof, fill in schema variables or type the formula manually and confirm.",
-      "rule": "Select the input steps from the proof and confirm."
+      "axiom": "Fill in schema variables or type the formula manually and confirm.",
+      "rule": "Select input steps from the proof and confirm."
     },
 
     "newjust": {

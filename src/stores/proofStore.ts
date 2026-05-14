@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import { addStep } from '@/logic/proof/ProofEngine'
 
@@ -15,15 +15,11 @@ import {
   parseFormula,
   type Formula,
 } from '@/logic/syntax/Formula'
-import { analyzeStepAsync, computeProgressAsync } from '@/workers/WorkerClient'
+import { analyzeStepAsync, computeProgressAsync, stopWorkers } from '@/workers/WorkerClient'
 
 export const useProofStore = defineStore('proof', () => {
   const state = ref<ProofState>(emptyProofState())
   const stateHistory = ref<ProofState[]>([])
-  // const lastError = ref<ProofError |string | null>(null)
-
-  // const heuristic = new HeuristicEvaluator()
-  // const analyzer = new StepAnalyzer()
 
   const assumptions = computed(() => state.value.assumptions)
   const axioms = computed(() => state.value.axioms)
@@ -34,6 +30,7 @@ export const useProofStore = defineStore('proof', () => {
 
   const stepFeedback = ref<Record<number, StepFeedback | null>>({ 0: null })
   const feedback = computed(() => stepFeedback.value[stateHistory.value.length])
+  const giveFeedback = ref(true)
   const progress = ref(0)
   const maxScore = ref(0)
 
@@ -64,9 +61,6 @@ export const useProofStore = defineStore('proof', () => {
     }
 
     state.value = emptyProofState([], parsedAssumptions, extendedRuleset)
-    // assumptions = state.value.assumptions
-    // axioms = state.value.axioms
-    // rules = state.value.rules
     stateHistory.value = [state.value]
     goal.value = parsedGoal
     recalculateMaxProgress()
@@ -116,8 +110,6 @@ export const useProofStore = defineStore('proof', () => {
     if (!initialized.value)
       return { success: false, error: new AppError('feedback.errors.newstep.not_initialized') }
 
-    // lastError.value = null
-
     let parsedFormula
 
     try {
@@ -131,14 +123,8 @@ export const useProofStore = defineStore('proof', () => {
     const result = addStep(state.value, parsedFormula, justification)
 
     if (!result.success) {
-      // const message = result.error ?? 'feedback.errors.newstep.rejected'
-      // lastError.value = message
       return { success: false, error: result.error }
     }
-    // console.log(result.feedback!.kind)
-
-    // const score1 = result.feedback!.score
-    // console.log(score1)
 
     state.value = result.state!
     stateHistory.value.push(state.value)
@@ -147,6 +133,14 @@ export const useProofStore = defineStore('proof', () => {
   }
 
   async function analyzeStep() {
+    if (!giveFeedback.value) {
+      const message = goalAchieved.value
+        ? 'feedback.hints.achieved'
+        : 'feedback.hints.feedback.disabled'
+      status.value = { kind: 'idle', message }
+      return
+    }
+
     const states = stateHistory.value.length
     stepFeedback.value[states] = null
     if (states < 2) return { kind: 'invalid', reason: { code: 'steps_missing' } }
@@ -163,7 +157,8 @@ export const useProofStore = defineStore('proof', () => {
       progress.value = 1 - Math.max(0, Math.min(maxScore.value, result.score)) / maxScore.value
 
       const score = feedback.value?.score.toString()
-      status.value = { kind: 'hint', message: feedback.value?.message, params: { score } }
+      const message = goalAchieved.value ? 'feedback.hints.achieved' : feedback.value?.message
+      status.value = { kind: 'hint', message, params: { score } }
     } catch (e) {
       status.value = { kind: 'error', message: (e as Error).message }
     }
@@ -180,6 +175,10 @@ export const useProofStore = defineStore('proof', () => {
   }
 
   function removeJustification(j: VisualJustification) {
+    const name = j.name
+    if (state.value.steps.some((s) => s.justification.name === name))
+      throw new AppError('feedback.errors.registries.justification_in_use', { name })
+
     switch (j.category) {
       case 'assumption':
         assumptions.value.remove(j.name)
@@ -247,24 +246,33 @@ export const useProofStore = defineStore('proof', () => {
     if (status.value.message === queued?.msg) queued = undefined
   }
 
-  function prevStatus() {}
-
   function resetStatus(message?: string) {
     if (status.value.kind === 'analyzing') return
+    queued = undefined
     status.value = { kind: 'idle', message: message ?? status.value.message }
   }
 
   async function recalculateMaxProgress() {
+    if (!giveFeedback.value) return
+
     try {
       status.value = { kind: 'analyzing', message: 'feedback.hints.analyzing.state' }
 
       maxScore.value = await computeProgressAsync(state.value, formulaToString(goal.value))
 
+      // setStatus({ kind: 'idle' })
       status.value = { kind: 'idle', message: queued?.msg, params: queued?.params }
     } catch (e) {
       status.value = { kind: 'error', message: (e as Error).message }
     }
   }
+
+  watch(giveFeedback, (enabled) => {
+    if (!enabled) {
+      stopWorkers()
+      status.value = { kind: 'idle' }
+    }
+  })
 
   return {
     steps,
@@ -273,6 +281,7 @@ export const useProofStore = defineStore('proof', () => {
     goalAchieved,
     availableJustifications,
 
+    giveFeedback,
     feedback,
     progress,
 

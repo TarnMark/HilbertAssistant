@@ -1,4 +1,3 @@
-import { calculateInputs } from '../rules/AxiomRegistry'
 import {
   formulaEquals,
   formulaToString,
@@ -11,48 +10,31 @@ import {
 import type { DerivedState } from './DerivedState'
 
 // export class HeuristicEvaluator {
-export function evaluateOld(state: DerivedState): number {
-  if (!state.goal) return Infinity
 
-  const goalNorm = normalizeFormula(state.goal!)
-  const goalKey = formulaToString(goalNorm)
-
-  if (state.formulas.has(goalKey)) return 0
-
-  let best = Infinity
-  let total = 0
-
-  for (const f of state.formulaMap.values()) {
-    const d = distance(f, goalNorm)
-    best = Math.min(best, d)
-    total += d
-  }
-
-  return best + 0.1 * total
-}
-
-export function evaluate(
-  state: DerivedState,
-  // parentState?: DerivedState
-): number {
+export function evaluate(state: DerivedState): number {
   const goalNorm = normalizeFormula(state.goal!)
 
   if (state.formulas.has(formulaToString(goalNorm))) return 0
 
   let best = Infinity
-  let total = 0
+  // let total = 0
 
   for (const f of state.formulaMap.values()) {
     const d = distance(f, goalNorm)
     best = Math.min(best, d)
-    total += d
+    // total += d
   }
 
   // const avg = total / Math.max(state.formulas.size, 1)
 
+  const formula = Array.from(state.formulaMap.values())[state.formulas.size - 1]
+
+  if (!formula) return 0
+
   let score = 100
 
   score += best // + 0.3 * avg
+  // score += 0.2 * distance(formula, goalNorm)
 
   // Complexity (soft penalty)
   score += averageFormulaSize(state)
@@ -145,6 +127,9 @@ function mpPotential(state: DerivedState): number {
     }
     if (impright === goal) {
       score += 5
+    }
+    if (left === impleft && left === impright && goal !== right) {
+      score -= 15
     }
   }
   // }

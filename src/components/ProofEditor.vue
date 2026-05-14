@@ -64,7 +64,7 @@ function addStepInput(step: ProofStep) {
 
     const required = rule?.inputs?.length ?? 0
 
-    if (required === 0) return
+    if (required === 0 || rule?.category !== 'rule') return
 
     const i = draftStep.inputs.lastIndexOf(step) // step being added in inputs
     const n = draftStep.inputs.findIndex(i => i === null) // existing null spots
@@ -124,14 +124,13 @@ defineExpose({
     display: flex;
     flex-direction: column;
 
-    height: 100%;
+    max-height: 84vh;
 }
 
 .canvas {
     flex: 1;
-    overflow-y: auto;
+    overflow-y: scroll;
     padding: 12px;
-    scrollbar-gutter: stable;
 }
 
 /* base button */

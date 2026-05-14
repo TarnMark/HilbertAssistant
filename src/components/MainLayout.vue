@@ -24,7 +24,8 @@ function ruleClicked(name: string) {
 .layout {
     flex: 1;
     display: grid;
-    grid-template-columns: 300px 1fr 300px;
+    grid-template-columns: max-content 1fr 30%;
     overflow: auto;
+    max-height: 84vh;
 }
 </style>

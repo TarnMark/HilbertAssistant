@@ -38,7 +38,9 @@
       "rule_not_found": "Sellist reeglit ei leitud: {name}",
 
       "empty": "Tühi põhjenduse valem",
-      "noname": "Põhjenduse nimi puudub"
+      "noname": "Põhjenduse nimi puudub",
+
+      "justification_in_use": "{name} ei ole võimalik kustutada, kuna seda on kasutatud tuletuskäigus."
     }
   },
   "hints": {
@@ -52,7 +54,8 @@
         "default": "See samm ei muuda tuletust oluliselt. Eesmärk on saavutatav { score } sammuga.",
         "no_goal": "See samm ei muuda tuletust oluliselt."
       },
-      "bad": "See samm vähendab tulevasi võimalusi või muudab tõestuse keerulisemaks."
+      "bad": "See samm vähendab tulevasi võimalusi või muudab tõestuse keerulisemaks.",
+      "disabled": "Samm lisatud tuletusse."
     },
     "idle": "Tee samm või lisa põhjendus, et saada tagasisidet.",
     "analyzing": {
@@ -64,7 +67,7 @@
     "newstep": {
       "creating": "Vali uue sammu põhjendus.",
       "assumption": "Täida eeldusvalem ja kinnita.",
-      "axiom": "Vali sisendsammud tõestusest, täida skeemimuutujad või kirjuta valem käsitsi ja kinnita.",
+      "axiom": "Täida skeemimuutujad või kirjuta valem käsitsi ja kinnita.",
       "rule": "Vali sisendsammud tõestusest ja kinnita."
     },
 

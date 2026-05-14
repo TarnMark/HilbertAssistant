@@ -20,7 +20,7 @@ export function validateStep(state: ProofState, step: ProofStep): ValidationResu
       return validateAxiom(step, state.axioms.getAll())
 
     case 'rule':
-      const name = step.justification.ruleName
+      const name = step.justification.name
       const rule = state.rules.get(name)
       if (!rule)
         return {
@@ -42,7 +42,7 @@ export function validateStep(state: ProofState, step: ProofStep): ValidationResu
 
   function validateAxiom(step: ProofStep, axioms: AxiomSchema[]): ValidationResult {
     if (step.justification.kind !== 'axiom') return { success: false }
-    const name = step.justification.schemaName
+    const name = step.justification.name
     const schema = axioms.find((a) => step.justification.kind === 'axiom' && a.name === name)
 
     if (!schema) {
