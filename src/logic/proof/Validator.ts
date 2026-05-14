@@ -13,7 +13,6 @@ export interface ValidationResult {
   error?: AppError
 }
 
-// export class Validator {
 export function validateStep(state: ProofState, step: ProofStep): ValidationResult {
   switch (step.justification.kind) {
     case 'axiom':
@@ -38,7 +37,6 @@ export function validateStep(state: ProofState, step: ProofStep): ValidationResu
         error: new AppError('feedback.errors.validation.unknown_justification'),
       }
   }
-  // }
 
   function validateAxiom(step: ProofStep, axioms: AxiomSchema[]): ValidationResult {
     if (step.justification.kind !== 'axiom') return { success: false }

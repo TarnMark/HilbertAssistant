@@ -1,5 +1,5 @@
-import type { ProofState } from '../proof/ProofState'
-import { type Formula } from '../syntax/Formula'
+import type { ProofState } from '../logic/proof/ProofState'
+import { type Formula } from '../logic/syntax/Formula'
 import { beamSearch } from './DeepSearch'
 import { buildDerivedState, type DerivedState } from './DerivedState'
 import { evaluate } from './HeuristicEvaluator'
@@ -99,4 +99,3 @@ export function analyzeMaxProgress(
 
   return result.foundGoal ? result.minDepthToGoal! : result.bestDistance
 }
-// }

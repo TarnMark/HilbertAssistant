@@ -19,8 +19,8 @@
 
 <script setup lang="ts">
 import { useProofStore } from '@/stores/proofStore';
-import SidebarBlock from './SidebarBlock.vue';
 import { useI18n } from 'vue-i18n';
+import SidebarBlock from './SidebarBlock.vue';
 
 const store = useProofStore()
 const { t } = useI18n()

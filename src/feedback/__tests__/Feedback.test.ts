@@ -3,8 +3,8 @@ import { AxiomRegistry } from '@/logic/rules/AxiomRegistry'
 import type { AxiomSchema } from '@/logic/rules/AxiomSchema'
 import { RuleRegistry } from '@/logic/rules/RuleRegistry'
 import { describe, expect, it } from 'vitest'
-import { emptyProofState } from '../../proof/ProofState'
-import { atom, imp, not, parseFormula, type Formula } from '../../syntax/Formula'
+import { emptyProofState } from '../../logic/proof/ProofState'
+import { atom, imp, not, parseFormula, type Formula } from '../../logic/syntax/Formula'
 import {
   applyAxiomSchema,
   beamSearch,
@@ -124,13 +124,7 @@ describe('Feedback - basic methods', () => {
 
 describe('Feedback - more complicated proofs', () => {
   it('⊢ A>A proof', () => {
-    const state = emptyProofState([
-      // {
-      //   index: 0,
-      //   formula: imp(A, imp(imp(A, A), A)),
-      //   justification: { kind: 'axiom', name: 'A1' },
-      // },
-    ])
+    const state = emptyProofState([])
     const derived = buildDerivedState(state)
     derived.goal = imp(A, A)
 
@@ -212,8 +206,8 @@ describe('Feedback - more complicated proofs', () => {
     derived.goal = imp(not(A), imp(A, not(B)))
 
     const result = beamSearch(derived, state.rules, state.axioms, evaluate, {
-      maxDepth: 7,
-      beamWidth: 4,
+      maxDepth: 5,
+      beamWidth: 3,
     })
 
     expect(result.bestDistance).toBeLessThan(

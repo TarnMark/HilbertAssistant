@@ -57,9 +57,9 @@
 
 <script setup lang="ts">
 import { formulaToString } from '@/logic';
-import { useProofStore } from '../stores/proofStore'
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useProofStore } from '@/stores/proofStore';
 const store = useProofStore()
 const { t } = useI18n()
 

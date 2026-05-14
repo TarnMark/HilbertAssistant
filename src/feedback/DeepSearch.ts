@@ -1,9 +1,9 @@
-import { instantiate } from '../proof/RuleValidator'
-import { AxiomRegistry } from '../rules/AxiomRegistry'
-import type { AxiomSchema } from '../rules/AxiomSchema'
-import { matchWithBindings, type InferenceRule } from '../rules/InferenceRule'
-import { RuleRegistry } from '../rules/RuleRegistry'
-import { formulaToString, normalizeFormula, type Formula } from '../syntax/Formula'
+import { instantiate } from '../logic/proof/RuleValidator'
+import { AxiomRegistry } from '../logic/rules/AxiomRegistry'
+import type { AxiomSchema } from '../logic/rules/AxiomSchema'
+import { matchWithBindings, type InferenceRule } from '../logic/rules/InferenceRule'
+import { RuleRegistry } from '../logic/rules/RuleRegistry'
+import { formulaToString, normalizeFormula, type Formula } from '../logic/syntax/Formula'
 import { buildSubformulaSet, type DerivedState } from './DerivedState'
 import { distance } from './HeuristicEvaluator'
 
@@ -15,11 +15,7 @@ export interface SearchNode {
   depth: number
 }
 
-export function findMatches(
-  rule: InferenceRule | AxiomSchema,
-  // state: DerivedState,
-  candidates: Formula[],
-): Binding[] {
+export function findMatches(rule: InferenceRule | AxiomSchema, candidates: Formula[]): Binding[] {
   const premises = rule.premises!
 
   if (!premises || premises.length === 0) return []
@@ -186,7 +182,6 @@ export function beamSearch(
 
     for (const node of frontier) {
       if (node.state.formulas.has(goalKey)) {
-        // console.log(node.state.formulas)
         return {
           bestDistance: 0,
           foundGoal: true,
@@ -219,7 +214,6 @@ export function beamSearch(
 
   // frontier[0]?.state.formulas.forEach((a) => console.log(a))
   const bestScore = frontier.length > 0 ? Math.min(...frontier.map((n) => n.score)) : Infinity
-  // const bestFirst = frontier.length > 0 ? Math.min(...frontier.map((n) => 1000 / (n.score * n.depth))) : Infinity
 
   return {
     bestDistance: bestDistanceToGoal(frontier[0]?.state!),

@@ -89,6 +89,5 @@ export function calculateInputsVars(axioms: string[]): Atom[] {
     if (axiom) Array.from(axiom.matchAll(/[A-Z]/g)).forEach((a) => vars.add('?' + a[0]))
   }
 
-  // console.log(vars)
   return [...vars].map((a) => atom(a)).sort()
 }

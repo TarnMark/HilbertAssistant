@@ -84,12 +84,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useProofStore } from '../stores/proofStore'
-import FormulaInput from './FormulaInput.vue';
 import { formulaToString, matchWithBindings, parseFormula, type Formula, type ProofStep } from '@/logic';
-import { useI18n } from 'vue-i18n';
 import { toJust } from '@/logic/proof/Justification';
+import { useProofStore } from '@/stores/proofStore';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import FormulaInput from '../components/FormulaInput.vue';
 
 const props = defineProps<{
     stepNumber: number, draftStep: {

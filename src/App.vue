@@ -11,11 +11,10 @@
 </template>
 
 <script setup lang="ts">
-import TopBar from './components/TopBar.vue'
-import MainLayout from './components/MainLayout.vue'
-// import AppFooter from './components/AppFooter.vue'
-import { useProofStore } from './stores/proofStore';
-import InitModal from './components/InitModal.vue';
+import TopBar from './ui/TopBar.vue';
+import MainLayout from './ui/editor/MainLayout.vue';
+import { useProofStore } from '@/stores/proofStore';
+import InitModal from './ui/InitModal.vue';
 
 const store = useProofStore()
 </script>

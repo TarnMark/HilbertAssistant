@@ -1,5 +1,5 @@
 import { serializeState, type ProofState } from '@/logic'
-import type { StepFeedback } from '@/logic/feedback/StepAnalyzer'
+import type { StepFeedback } from '@/feedback/StepAnalyzer'
 
 // general
 

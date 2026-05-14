@@ -29,12 +29,12 @@
 </template>
 
 <script setup lang="ts">
-import { useProofStore } from '@/stores/proofStore';
-import NewJustificationCard from './NewJustificationCard.vue';
-import { ref } from 'vue';
 import { formulaToString } from '@/logic';
 import { AppError } from '@/logic/proof/AppError';
 import type { VisualJustification } from '@/logic/proof/Justification';
+import { useProofStore } from '@/stores/proofStore';
+import { ref } from 'vue';
+import NewJustificationCard from './NewJustificationCard.vue';
 const props = defineProps<{ title: string, formulas: VisualJustification[], have_names?: boolean, have_premises?: boolean }>()
 
 const store = useProofStore()

@@ -44,12 +44,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useProofStore } from '@/stores/proofStore'
-import FormulaInput from './FormulaInput.vue'
-import RulesetToggle from './RulesetToggle.vue'
-import { useI18n } from 'vue-i18n'
 import type { AppError } from '@/logic/proof/AppError'
+import { useProofStore } from '@/stores/proofStore'
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import FormulaInput from './components/FormulaInput.vue'
+import RulesetToggle from './components/RulesetToggle.vue'
 
 const store = useProofStore()
 const { t } = useI18n()

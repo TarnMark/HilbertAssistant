@@ -6,10 +6,8 @@ import {
   type Formula,
   type Implication,
   type Negation,
-} from '../syntax/Formula'
+} from '../logic/syntax/Formula'
 import type { DerivedState } from './DerivedState'
-
-// export class HeuristicEvaluator {
 
 export function evaluate(state: DerivedState): number {
   const goalNorm = normalizeFormula(state.goal!)
@@ -17,15 +15,11 @@ export function evaluate(state: DerivedState): number {
   if (state.formulas.has(formulaToString(goalNorm))) return 0
 
   let best = Infinity
-  // let total = 0
 
   for (const f of state.formulaMap.values()) {
     const d = distance(f, goalNorm)
     best = Math.min(best, d)
-    // total += d
   }
-
-  // const avg = total / Math.max(state.formulas.size, 1)
 
   const formula = Array.from(state.formulaMap.values())[state.formulas.size - 1]
 
@@ -175,4 +169,3 @@ function atoms(f: Formula, acc: string[] = []): string[] {
     }
   }
 }
-// }

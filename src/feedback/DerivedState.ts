@@ -1,10 +1,10 @@
-import type { ProofState } from '../proof/ProofState'
+import type { ProofState } from '../logic/proof/ProofState'
 import {
   collectSubformulas,
   formulaToString,
   normalizeFormula,
   type Formula,
-} from '../syntax/Formula'
+} from '../logic/syntax/Formula'
 
 export interface DerivedState {
   formulas: Set<string> // canonicalized formulas
@@ -23,8 +23,6 @@ export function buildDerivedState(state: ProofState): DerivedState {
   }
 
   state.assumptions.getAll().forEach((a) => add(a.formula))
-
-  // state.axioms.getAll().forEach((ax) => add(ax.schema))
 
   state.steps.forEach((step) => add(step.formula))
 

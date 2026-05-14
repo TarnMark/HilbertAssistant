@@ -12,8 +12,8 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import LanguageSwitcher from './LanguageSwitcher.vue';
-import FeedbackToggle from './FeedbackToggle.vue';
+import LanguageSwitcher from './components/LanguageSwitcher.vue';
+import FeedbackToggle from './components/FeedbackToggle.vue';
 import { useProofStore } from '@/stores/proofStore';
 
 const store = useProofStore()

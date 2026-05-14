@@ -7,9 +7,9 @@
 </template>
 
 <script setup lang="ts">
-import RulesSidebar from './RulesSidebar.vue'
+import RulesSidebar from '../rules_sidebar/RulesSidebar.vue'
 import ProofEditor from './ProofEditor.vue'
-import StatusPanel from './StatusPanel.vue'
+import StatusPanel from '../status_panel/StatusPanel.vue'
 import { ref } from 'vue'
 
 const editor = ref()

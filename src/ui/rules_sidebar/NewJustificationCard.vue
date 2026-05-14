@@ -46,12 +46,12 @@
 </template>
 
 <script setup lang="ts">
-import { parseFormula } from "@/logic/syntax/Formula";
-import { ref } from "vue"
-import FormulaInput from "./FormulaInput.vue";
-import { useProofStore } from "@/stores/proofStore";
-import { useI18n } from "vue-i18n";
 import type { AppError } from "@/logic/proof/AppError";
+import { parseFormula } from "@/logic/syntax/Formula";
+import { useProofStore } from "@/stores/proofStore";
+import { ref } from "vue";
+import { useI18n } from "vue-i18n";
+import FormulaInput from "../components/FormulaInput.vue";
 const props = defineProps<{
     allowName?: boolean,
     allowPremises?: boolean

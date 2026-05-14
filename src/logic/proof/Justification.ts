@@ -20,7 +20,7 @@ export type VisualJustification = {
   name: string
   formula: string
   category: 'assumption' | 'axiom' | 'rule'
-  inputs?: Formula[] //boolean
+  inputs?: Formula[]
 }
 
 export function toJust(visual: VisualJustification, from?: number[]): Justification {

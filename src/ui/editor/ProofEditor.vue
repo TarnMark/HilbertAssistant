@@ -21,12 +21,12 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import { useProofStore } from '../stores/proofStore'
-import ProofStepRow from './ProofStepRow.vue'
-import NewStepBlock from './NewStepBlock.vue'
 import type { ProofStep } from '@/logic'
+import { reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useProofStore } from '@/stores/proofStore'
+import NewStepBlock from './NewStepBlock.vue'
+import ProofStepRow from './ProofStepRow.vue'
 
 const store = useProofStore()
 const { t } = useI18n()

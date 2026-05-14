@@ -4,7 +4,7 @@ import { computed, ref, watch } from 'vue'
 import { addStep } from '@/logic/proof/ProofEngine'
 
 import { emptyProofState, type ProofState } from '@/logic'
-import { analyzeMaxProgress, type StepFeedback } from '@/logic/feedback/StepAnalyzer'
+import { analyzeMaxProgress, type StepFeedback } from '@/feedback/StepAnalyzer'
 import { AppError } from '@/logic/proof/AppError'
 import type { Justification, VisualJustification } from '@/logic/proof/Justification'
 import {
@@ -34,11 +34,9 @@ export const useProofStore = defineStore('proof', () => {
   const progress = ref(0)
   const maxScore = ref(0)
 
-  const goalAchieved = computed(() =>
-    state.value.steps.length == 0
-      ? false
-      : formulaEquals(state.value.steps[state.value.steps.length - 1]?.formula!, goal.value),
-  )
+  // -----
+  // Setup
+  // -----
 
   function initializeSession(
     extendedRuleset: boolean,
@@ -69,9 +67,15 @@ export const useProofStore = defineStore('proof', () => {
     return { success: true }
   }
 
-  // ----------------------------
-  // Derived Data (UI-facing)
-  // ----------------------------
+  // -------------
+  // Derived Data
+  // -------------
+
+  const goalAchieved = computed(() =>
+    state.value.steps.length == 0
+      ? false
+      : formulaEquals(state.value.steps[state.value.steps.length - 1]?.formula!, goal.value),
+  )
 
   const steps = computed(() => state.value.steps)
 
@@ -95,13 +99,12 @@ export const useProofStore = defineStore('proof', () => {
       formula: formulaToString(r.conclusion),
       category: 'rule' as const,
       inputs: r.premises ?? [],
-      // inputs: true,
     })),
   ])
 
-  // ----------------------------
-  // Public Action: Commit Step
-  // ----------------------------
+  // -------------------
+  // Proof Modification
+  // -------------------
 
   function commitStep(
     formulaString: string,
@@ -130,6 +133,94 @@ export const useProofStore = defineStore('proof', () => {
     stateHistory.value.push(state.value)
 
     return { success: true }
+  }
+
+  function undoStep() {
+    const states = stateHistory.value.length
+    if (states > 1) {
+      stateHistory.value.pop()!
+      state.value = stateHistory.value[states - 2]!
+      resetStatus('')
+      stepFeedback.value[states - 1] = null
+    }
+  }
+
+  function removeJustification(j: VisualJustification) {
+    const name = j.name
+    if (state.value.steps.some((s) => s.justification.name === name))
+      throw new AppError('feedback.errors.registries.justification_in_use', { name })
+
+    switch (j.category) {
+      case 'assumption':
+        assumptions.value.remove(j.name)
+        break
+      case 'axiom':
+        axioms.value.remove(j.name)
+        break
+      case 'rule':
+        rules.value.remove(j.name)
+        break
+    }
+    recalculateMaxProgress()
+  }
+
+  function addJustification(j: VisualJustification) {
+    if (j.name === '') throw new AppError('feedback.errors.registries.noname')
+    if (j.formula === '') throw new AppError('feedback.errors.registries.empty')
+
+    const formula = parseFormula(j.formula, j.category !== 'assumption')
+
+    switch (j.category) {
+      case 'assumption':
+        assumptions.value.add({ name: j.name, formula })
+        resetStatus()
+        break
+      case 'axiom':
+        axioms.value.add({ name: j.name, schema: formula })
+        break
+      case 'rule':
+        rules.value.add({
+          name: j.name,
+          premises: j.inputs ?? [],
+          conclusion: formula,
+        })
+        break
+    }
+    recalculateMaxProgress()
+  }
+
+  // -------------------
+  // Analysis and Status
+  // -------------------
+
+  type ProofStatus = {
+    kind: 'idle' | 'analyzing' | 'error' | 'hint' | 'goal'
+    message?: string
+    error?: AppError
+    params?: Record<string, unknown>
+  }
+
+  const status = ref<ProofStatus>({ kind: 'idle' })
+  let queued: { msg?: string; params?: Record<string, unknown> } | undefined
+
+  function setStatus(newStatus: ProofStatus) {
+    if (status.value.kind === 'analyzing') {
+      queued = { msg: newStatus.message, params: newStatus.params }
+      return
+    }
+    status.value = {
+      kind: newStatus.kind,
+      message: newStatus.message ?? queued?.msg ?? status.value.message,
+      error: newStatus.error ?? undefined,
+      params: newStatus.params ?? queued?.params ?? undefined,
+    }
+    if (status.value.message === queued?.msg) queued = undefined
+  }
+
+  function resetStatus(message?: string) {
+    if (status.value.kind === 'analyzing') return
+    queued = undefined
+    status.value = { kind: 'idle', message: message ?? status.value.message }
   }
 
   async function analyzeStep() {
@@ -164,94 +255,6 @@ export const useProofStore = defineStore('proof', () => {
     }
   }
 
-  function undoStep() {
-    const states = stateHistory.value.length
-    if (states > 1) {
-      stateHistory.value.pop()!
-      state.value = stateHistory.value[states - 2]!
-      resetStatus('')
-      stepFeedback.value[states - 1] = null
-    }
-  }
-
-  function removeJustification(j: VisualJustification) {
-    const name = j.name
-    if (state.value.steps.some((s) => s.justification.name === name))
-      throw new AppError('feedback.errors.registries.justification_in_use', { name })
-
-    switch (j.category) {
-      case 'assumption':
-        assumptions.value.remove(j.name)
-        break
-      case 'axiom':
-        axioms.value.remove(j.name)
-        break
-      case 'rule':
-        rules.value.remove(j.name)
-        break
-    }
-    recalculateMaxProgress()
-  }
-
-  function addJustification(j: VisualJustification) {
-    // try {
-    if (j.name === '') throw new AppError('feedback.errors.registries.noname')
-    if (j.formula === '') throw new AppError('feedback.errors.registries.empty')
-
-    const formula = parseFormula(j.formula, j.category !== 'assumption')
-
-    switch (j.category) {
-      case 'assumption':
-        assumptions.value.add({ name: j.name, formula })
-        resetStatus()
-        break
-      case 'axiom':
-        axioms.value.add({ name: j.name, schema: formula })
-        break
-      case 'rule':
-        rules.value.add({
-          name: j.name,
-          premises: j.inputs ?? [],
-          conclusion: formula,
-        })
-        break
-    }
-    recalculateMaxProgress()
-    // } catch (error) {
-    //   status.value = { kind: 'error', message: (error as Error).message }
-    // }
-  }
-
-  type ProofStatus = {
-    kind: 'idle' | 'analyzing' | 'error' | 'hint' | 'goal'
-    message?: string
-    error?: AppError
-    params?: Record<string, unknown>
-  }
-
-  const status = ref<ProofStatus>({ kind: 'idle' })
-  let queued: { msg?: string; params?: Record<string, unknown> } | undefined
-
-  function setStatus(newStatus: ProofStatus) {
-    if (status.value.kind === 'analyzing') {
-      queued = { msg: newStatus.message, params: newStatus.params }
-      return
-    }
-    status.value = {
-      kind: newStatus.kind,
-      message: newStatus.message ?? queued?.msg ?? status.value.message,
-      error: newStatus.error ?? undefined,
-      params: newStatus.params ?? queued?.params ?? undefined,
-    }
-    if (status.value.message === queued?.msg) queued = undefined
-  }
-
-  function resetStatus(message?: string) {
-    if (status.value.kind === 'analyzing') return
-    queued = undefined
-    status.value = { kind: 'idle', message: message ?? status.value.message }
-  }
-
   async function recalculateMaxProgress() {
     if (!giveFeedback.value) return
 
@@ -260,7 +263,6 @@ export const useProofStore = defineStore('proof', () => {
 
       maxScore.value = await computeProgressAsync(state.value, formulaToString(goal.value))
 
-      // setStatus({ kind: 'idle' })
       status.value = { kind: 'idle', message: queued?.msg, params: queued?.params }
     } catch (e) {
       status.value = { kind: 'error', message: (e as Error).message }

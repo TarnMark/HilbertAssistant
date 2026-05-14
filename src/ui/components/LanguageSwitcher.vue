@@ -38,7 +38,6 @@ function select(loc: string) {
     open.value = false
 }
 
-// Close on outside click
 function onClickOutside(e: MouseEvent) {
     if (!root.value) return
     if (!root.value.contains(e.target as Node)) {
