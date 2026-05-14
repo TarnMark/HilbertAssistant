@@ -271,6 +271,8 @@ export const useProofStore = defineStore('proof', () => {
     if (!enabled) {
       stopWorkers()
       status.value = { kind: 'idle' }
+    } else {
+      recalculateMaxProgress()
     }
   })
 
